@@ -64,16 +64,63 @@ export function ImageCompressor() {
 }
 
 /* ---------- Image Resizer ---------- */
-const PRESETS: { label: string; w: number; h: number; kb?: number }[] = [
-  { label: "Instagram post 1080×1080", w: 1080, h: 1080 },
-  { label: "Instagram story 1080×1920", w: 1080, h: 1920 },
-  { label: "LinkedIn post 1200×627", w: 1200, h: 627 },
-  { label: "YouTube thumbnail 1280×720", w: 1280, h: 720 },
-  { label: "X / Twitter 1600×900", w: 1600, h: 900 },
-  { label: "Document photo 200×230 (≤50 KB)", w: 200, h: 230, kb: 50 },
-  { label: "Passport-style photo 413×531 (≤100 KB)", w: 413, h: 531, kb: 100 },
-  { label: "Signature 140×60 (≤20 KB)", w: 140, h: 60, kb: 20 },
+type Preset = { label: string; w: number; h: number; kb?: number };
+const PRESET_GROUPS: { group: string; items: Preset[] }[] = [
+  { group: "🇮🇳 India — Photos", items: [
+    { label: "Passport / Passport Seva 35×45mm (413×531)", w: 413, h: 531, kb: 100 },
+    { label: "SSC / Govt exams photo 3.5×4.5cm (≤50 KB)", w: 350, h: 450, kb: 50 },
+    { label: "UPSC photo 350×350 (≤300 KB)", w: 350, h: 350, kb: 300 },
+    { label: "PAN card photo 213×213 (≤50 KB)", w: 213, h: 213, kb: 50 },
+    { label: "Aadhaar / small form photo 200×230 (≤50 KB)", w: 200, h: 230, kb: 50 },
+    { label: "Visa (OCI / e-Visa) 2×2in (600×600, ≤1 MB)", w: 600, h: 600, kb: 1000 },
+  ]},
+  { group: "🇮🇳 India — Signatures", items: [
+    { label: "SSC / Govt exams signature 4×2cm (≤20 KB)", w: 400, h: 200, kb: 20 },
+    { label: "UPSC signature 350×350 (≤300 KB)", w: 350, h: 350, kb: 300 },
+    { label: "PAN card signature 2×4.5cm (≤50 KB)", w: 213, h: 100, kb: 50 },
+    { label: "Bank / IBPS signature 140×60 (≤20 KB)", w: 140, h: 60, kb: 20 },
+  ]},
+  { group: "🇺🇸 USA", items: [
+    { label: "US passport / visa 2×2in (600×600, ≤240 KB)", w: 600, h: 600, kb: 240 },
+    { label: "Green card (DV lottery) 600×600 (≤240 KB)", w: 600, h: 600, kb: 240 },
+    { label: "USCIS / driver's license 2×2in (600×600)", w: 600, h: 600 },
+    { label: "Signature 600×200 (≤100 KB)", w: 600, h: 200, kb: 100 },
+  ]},
+  { group: "🇪🇺 Europe & UK", items: [
+    { label: "EU / Schengen passport 35×45mm (413×531)", w: 413, h: 531 },
+    { label: "UK passport online 600×750 (≤10 MB)", w: 600, h: 750 },
+    { label: "Germany biometric 35×45mm (413×531)", w: 413, h: 531 },
+    { label: "Schengen visa 35×45mm (≤500 KB)", w: 413, h: 531, kb: 500 },
+    { label: "Signature 45×15mm (531×177)", w: 531, h: 177 },
+  ]},
+  { group: "🌍 Middle East", items: [
+    { label: "UAE visa / Emirates ID 43×55mm (508×650)", w: 508, h: 650 },
+    { label: "Saudi visa 4×6cm (472×709)", w: 472, h: 709 },
+    { label: "Qatar visa 38×48mm (449×567)", w: 449, h: 567 },
+    { label: "Oman / Kuwait / Bahrain 40×60mm (472×709)", w: 472, h: 709 },
+    { label: "Signature 400×150 (≤50 KB)", w: 400, h: 150, kb: 50 },
+  ]},
+  { group: "💼 Job & profile", items: [
+    { label: "Resume photo 300×400", w: 300, h: 400 },
+    { label: "LinkedIn profile 400×400", w: 400, h: 400 },
+    { label: "LinkedIn banner 1584×396", w: 1584, h: 396 },
+    { label: "Email signature logo 300×100", w: 300, h: 100 },
+  ]},
+  { group: "📱 Social media", items: [
+    { label: "Instagram post 1080×1080", w: 1080, h: 1080 },
+    { label: "Instagram / Reels story 1080×1920", w: 1080, h: 1920 },
+    { label: "LinkedIn post 1200×627", w: 1200, h: 627 },
+    { label: "YouTube thumbnail 1280×720", w: 1280, h: 720 },
+    { label: "X / Twitter 1600×900", w: 1600, h: 900 },
+    { label: "Facebook cover 1640×624", w: 1640, h: 624 },
+  ]},
+  { group: "🛒 Ecommerce", items: [
+    { label: "Amazon / Flipkart product 2000×2000", w: 2000, h: 2000 },
+    { label: "Shopify product 2048×2048", w: 2048, h: 2048 },
+    { label: "Etsy listing 2000×1600", w: 2000, h: 1600 },
+  ]},
 ];
+const PRESETS: Preset[] = PRESET_GROUPS.flatMap((g) => g.items);
 export function ImageResizer() {
   const [img, setImg] = useState<HTMLImageElement | null>(null);
   const [name, setName] = useState("image");
@@ -112,10 +159,12 @@ export function ImageResizer() {
             {result && <img src={result.url} alt="Preview" className="max-h-96 max-w-full rounded-lg shadow-soft" />}
           </div>
           <div className="grid content-start gap-4">
-            <Field label="Preset">
+            <Field label="Size preset — by country & purpose" hint="Common official sizes; always confirm on the portal you upload to.">
               <select className={inputCls} defaultValue="" onChange={(e) => { const p = PRESETS[+e.target.value]; if (p) { setW(p.w); setH(p.h); setLock(false); setKb(p.kb ?? ""); } }}>
                 <option value="" disabled>Choose a preset…</option>
-                {PRESETS.map((p, i) => <option key={p.label} value={i}>{p.label}</option>)}
+                {(() => { let i = 0; return PRESET_GROUPS.map((g) => (
+                  <optgroup key={g.group} label={g.group}>{g.items.map((p) => { const idx = i++; return <option key={idx} value={idx}>{p.label}</option>; })}</optgroup>
+                )); })()}
               </select>
             </Field>
             <div className="grid grid-cols-2 gap-3">
