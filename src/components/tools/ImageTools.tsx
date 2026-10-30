@@ -2,8 +2,9 @@ import { useEffect, useState } from "react";
 import QRCode from "qrcode";
 import JSZip from "jszip";
 import { PDFDocument, StandardFonts, rgb } from "pdf-lib";
-import { ArrowDown, ArrowUp, X } from "lucide-react";
+import { AlertTriangle, ArrowDown, ArrowUp, Check, Loader2, X } from "lucide-react";
 import { loadSample } from "@/lib/samples";
+import { fitToTarget } from "@/lib/fit-size";
 import { Btn, Dropzone, DownloadBtn, ErrorNote, Field, Panel, baseName, canvasBlob, download, extFor, fmtBytes, inputCls, loadImage, rangeCls } from "./ui";
 
 type Out = { name: string; before: number; blob: Blob; url: string };
@@ -132,27 +133,56 @@ export function ImageResizer() {
   const [sampling, setSampling] = useState(false);
   const [fit, setFit] = useState<"cover" | "contain" | "stretch">("cover");
   const [kb, setKb] = useState<number | "">("");
-  const [result, setResult] = useState<{ blob: Blob; url: string } | null>(null);
+  const [out, setOut] = useState<{ blob: Blob; url: string; q: number; scale: number; hits: boolean } | null>(null);
+  const [busy, setBusy] = useState(false);
   const ratio = img ? img.naturalWidth / img.naturalHeight : 1;
-  const draw = () => {
+  const target = kb ? Math.max(1, Math.round(kb * 1024)) : 0;
+
+  const draw = (scale = 1) => {
     if (!img || !w || !h) return null;
-    const c = document.createElement("canvas"); c.width = w; c.height = h;
-    const ctx = c.getContext("2d")!; ctx.fillStyle = "#fff"; ctx.fillRect(0, 0, w, h);
-    if (fit === "stretch") ctx.drawImage(img, 0, 0, w, h);
+    const W = Math.max(1, Math.round(w * scale)), H = Math.max(1, Math.round(h * scale));
+    const c = document.createElement("canvas"); c.width = W; c.height = H;
+    const ctx = c.getContext("2d")!; ctx.fillStyle = "#fff"; ctx.fillRect(0, 0, W, H);
+    if (fit === "stretch") ctx.drawImage(img, 0, 0, W, H);
     else {
-      const s = fit === "cover" ? Math.max(w / img.naturalWidth, h / img.naturalHeight) : Math.min(w / img.naturalWidth, h / img.naturalHeight);
+      const s = fit === "cover" ? Math.max(W / img.naturalWidth, H / img.naturalHeight) : Math.min(W / img.naturalWidth, H / img.naturalHeight);
       const dw = img.naturalWidth * s, dh = img.naturalHeight * s;
-      ctx.drawImage(img, (w - dw) / 2, (h - dh) / 2, dw, dh);
+      ctx.drawImage(img, (W - dw) / 2, (H - dh) / 2, dw, dh);
     }
     return c;
   };
-  useEffect(() => { const c = draw(); if (c) canvasBlob(c, "image/jpeg", 0.92).then((b) => setResult({ blob: b, url: URL.createObjectURL(b) })); }, [img, w, h, fit]); // eslint-disable-line react-hooks/exhaustive-deps
-  const exportIt = async () => {
-    const c = draw(); if (!c) return;
-    let q = 0.92, b = await canvasBlob(c, "image/jpeg", q);
-    if (kb) while (b.size > kb * 1024 && q > 0.1) { q -= 0.07; b = await canvasBlob(c, "image/jpeg", q); }
-    download(b, `${name}-${w}x${h}.jpg`);
+
+  // Hit the target file size: tune JPEG quality first, and only give up pixels if quality alone can't get there.
+  const make = async () => {
+    const base = draw(); if (!base) return null;
+    const mk = (blob: Blob, q: number, scale: number, hits: boolean) => ({ blob, url: URL.createObjectURL(blob), q, scale, hits });
+    if (!target) return mk(await canvasBlob(base, "image/jpeg", 0.92), 0.92, 1, true);
+    const cache = new Map<string, Blob>();
+    const encode = async (q: number, scale: number) => {
+      const key = `${q}|${scale}`;
+      let blob = cache.get(key);
+      if (!blob) { blob = await canvasBlob(scale === 1 ? base : draw(scale)!, "image/jpeg", q); cache.set(key, blob); }
+      return { size: blob.size, blob };
+    };
+    const fit = await fitToTarget(encode, target);
+    return mk((await encode(fit.q, fit.scale)).blob, fit.q, fit.scale, fit.hits);
   };
+
+  useEffect(() => {
+    if (!img || !w || !h) return;
+    let alive = true;
+    const t = setTimeout(() => {
+      setBusy(true);
+      make().then((r) => {
+        if (!alive) { if (r) URL.revokeObjectURL(r.url); return; }
+        setOut((prev) => { if (prev) URL.revokeObjectURL(prev.url); return r; });
+        setBusy(false);
+      });
+    }, 250);
+    return () => { alive = false; clearTimeout(t); };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [img, w, h, fit, kb]);
+
   const pick = async (f: File) => { const i = await loadImage(f); setImg(i); setName(baseName(f.name)); setW(i.naturalWidth); setH(i.naturalHeight); };
   return (
     <Panel>
@@ -161,8 +191,29 @@ export function ImageResizer() {
           sample={{ label: "Try a sample passport photo", busy: sampling, onPick: async () => { setSampling(true); await pick(await loadSample("portrait")); setSampling(false); } }} />
       ) : (
         <div className="grid gap-6 lg:grid-cols-[1fr_320px]">
-          <div className="flex min-h-64 items-center justify-center rounded-2xl bg-muted grid-dots p-4">
-            {result && <img src={result.url} alt="Preview" className="max-h-96 max-w-full rounded-lg shadow-soft" />}
+          <div className="grid content-start gap-3">
+            <div className="flex min-h-64 items-center justify-center rounded-2xl bg-muted grid-dots p-4">
+              {out ? <img src={out.url} alt="Preview" className="max-h-96 max-w-full rounded-lg shadow-soft" /> : <div className="h-40 w-40 rounded-lg bg-secondary" />}
+            </div>
+            <div className={`rounded-2xl border p-4 text-sm ${out && !out.hits ? "border-destructive/40 bg-destructive/5" : "border-primary/20 bg-secondary/40"}`}>
+              {busy ? (
+                <p className="flex items-center gap-2 font-semibold text-primary"><Loader2 className="h-4 w-4 animate-spin" /> Matching your target size…</p>
+              ) : out ? (
+                <>
+                  <p className="flex items-center gap-2 font-semibold">
+                    {out.hits ? <Check className="h-4 w-4 text-primary" /> : <AlertTriangle className="h-4 w-4 text-destructive" />}
+                    {fmtBytes(out.blob.size)}
+                    {target ? (out.hits ? <span className="text-primary">— under your {kb} KB target</span> : <span className="text-destructive">— still above your {kb} KB target</span>) : <span className="text-muted-foreground">— no target set</span>}
+                  </p>
+                  <p className="mt-1 text-muted-foreground">
+                    Quality {Math.round(out.q * 100)}%
+                    {out.scale < 1 ? ` · output ${Math.round(w * out.scale)}×${Math.round(h * out.scale)} px to fit the target` : target ? " · full size kept" : ""}
+                    {out.q < 0.25 ? " · it will look soft — a looser target stays sharper" : ""}
+                    {target && !out.hits ? " · try a smaller width/height or a looser target" : ""}
+                  </p>
+                </>
+              ) : null}
+            </div>
           </div>
           <div className="grid content-start gap-4">
             <Field label="Size preset — by country & purpose" hint="Common official sizes; always confirm on the portal you upload to.">
@@ -183,10 +234,21 @@ export function ImageResizer() {
                 <option value="cover">Crop to fill</option><option value="contain">Fit inside (white bars)</option><option value="stretch">Stretch</option>
               </select>
             </Field>
-            <Field label="Max file size (KB, optional)" hint="Always check the exact size rules on the portal you're uploading to.">
-              <input className={inputCls} type="number" value={kb} onChange={(e) => setKb(e.target.value ? +e.target.value : "")} />
+            <Field label="Target file size (KB)" hint="Tell us the portal's limit — we tune quality, then pixels, to land under it.">
+              <div className="grid gap-2">
+                <input className={inputCls} type="number" min={1} value={kb} onChange={(e) => setKb(e.target.value ? +e.target.value : "")} placeholder="e.g. 20" />
+                <div className="flex flex-wrap gap-1.5">
+                  {[10, 20, 50, 100, 200].map((v) => (
+                    <button key={v} type="button" onClick={() => setKb(v)} className={`rounded-full border px-3 py-1 text-xs font-bold ${kb === v ? "bg-gradient-primary text-primary-foreground" : "hover:bg-secondary"}`}>≤ {v} KB</button>
+                  ))}
+                  {kb !== "" && <button type="button" onClick={() => setKb("")} className="rounded-full border px-3 py-1 text-xs font-bold text-muted-foreground hover:bg-secondary">No target</button>}
+                </div>
+              </div>
             </Field>
-            <div className="flex flex-wrap gap-2"><DownloadBtn onClick={exportIt} /><Btn variant="ghost" onClick={() => setImg(null)}>New image</Btn></div>
+            <div className="flex flex-wrap gap-2">
+              <DownloadBtn onClick={() => out && download(out.blob, `${name}-${w}x${h}.jpg`)}>Download {out ? fmtBytes(out.blob.size) : ""}</DownloadBtn>
+              <Btn variant="ghost" onClick={() => setImg(null)}>New image</Btn>
+            </div>
           </div>
         </div>
       )}
