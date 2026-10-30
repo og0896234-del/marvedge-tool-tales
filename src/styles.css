@@ -143,3 +143,8 @@
 
 @utility animate-fade-up { animation: fade-up .7s cubic-bezier(.2,.7,.2,1) both; }
 @utility animate-float { animation: float-y 5s ease-in-out infinite; }
+
+/* Illustrated fact cards only move on intentional hover. */
+@media (prefers-reduced-motion: no-preference) {
+  .group:hover .insight-vector-float { animation: float-y 3s ease-in-out infinite; }
+}
