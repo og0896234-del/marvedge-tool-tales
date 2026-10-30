@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
 import { Sparkles, X } from "lucide-react";
 import { runAiTool, runTranscribe, runVoiceover } from "@/lib/ai.functions";
+import { loadSample, loadScreens } from "@/lib/samples";
 import { Btn, CopyBtn, DownloadBtn, Dropzone, ErrorNote, Field, Panel, download, inputCls, loadImage } from "./ui";
 
 const errMsg = (e: unknown) => (e instanceof Error ? e.message : "Something went wrong. Please try again.");
@@ -27,7 +28,7 @@ const CONFIG: Record<string, { fields: FieldDef[]; cta: string }> = {
 
 export function AiTextTool({ slug }: { slug: string }) {
   const cfg = CONFIG[slug]!;
-  const [vals, setVals] = useState<Record<string, string>>(() => Object.fromEntries(cfg.fields.map((f) => [f.key, f.options?.[0] ?? ""])));
+  const [vals, setVals] = useState<Record<string, string>>(() => Object.fromEntries(cfg.fields.map((f) => [f.key, cfg.demo?.[f.key] ?? f.options?.[0] ?? ""])));
   const [out, setOut] = useState(""); const [busy, setBusy] = useState(false); const [err, setErr] = useState<string | null>(null);
   const run = useServerFn(runAiTool);
   const go = async () => {

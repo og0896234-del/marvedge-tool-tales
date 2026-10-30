@@ -211,6 +211,7 @@ export function GifCompressor() {
   const [file, setFile] = useState<File | null>(null);
   const [scale, setScale] = useState(75); const [skip, setSkip] = useState(1); const [colors, setColors] = useState(64);
   const [busy, setBusy] = useState(false); const [res, setRes] = useState<Res | null>(null); const [err, setErr] = useState<string | null>(null);
+  const [sampling, setSampling] = useState(false);
   const run = async () => {
     if (!file) return; setBusy(true); setErr(null); setRes(null);
     try {
@@ -247,7 +248,8 @@ export function GifCompressor() {
   };
   return (
     <Panel>
-      <Dropzone accept="image/gif" label={file ? `Selected: ${file.name} (${fmtBytes(file.size)})` : "Drop a GIF to compress"} onFiles={([f]) => { setFile(f ?? null); setRes(null); }} />
+      <Dropzone accept="image/gif" label={file ? `Selected: ${file.name} (${fmtBytes(file.size)})` : "Drop a GIF to compress"} onFiles={([f]) => { setFile(f ?? null); setRes(null); }}
+        sample={{ label: "Try a sample GIF", busy: sampling, onPick: async () => { setSampling(true); const f = await loadSample("gif"); setFile(f); setRes(null); setSampling(false); }, note: "A dummy animation so you can see the size drop before using your own." }} />
       {file && (
         <div className="grid gap-4 md:grid-cols-4">
           <Field label={`Size ${scale}%`}><input type="range" min={20} max={100} step={5} value={scale} onChange={(e) => setScale(+e.target.value)} className={rangeCls} /></Field>
