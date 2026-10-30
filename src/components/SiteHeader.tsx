@@ -17,7 +17,7 @@ function ToolList({ onPick }: { onPick?: () => void }) {
           </div>
           <div className="grid gap-0.5">
             {g.items.map((t) => (
-              <Link key={t.slug} to={t.path} onClick={onPick}
+              <Link key={t.slug} to="/$slug" params={{ slug: t.slug }} onClick={onPick}
                 className="rounded-lg px-3 py-2 text-sm font-medium transition-colors hover:bg-secondary hover:text-primary"
                 activeProps={{ className: "bg-secondary text-primary" }}>
                 {t.name}

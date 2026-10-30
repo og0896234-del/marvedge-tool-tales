@@ -44,7 +44,7 @@ function Index() {
             <h2 className="text-3xl font-extrabold md:text-4xl">{cat === "AI tool" ? "AI tools that think with you" : "Free utilities that just work"}</h2>
             <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
               {tools.filter((t) => t.category === cat).map((t, i) => (
-                <Link key={t.slug} to={t.path} style={{ animationDelay: `${i * 50}ms` }}
+                <Link key={t.slug} to="/$slug" params={{ slug: t.slug }} style={{ animationDelay: `${i * 50}ms` }}
                   className="group animate-fade-up rounded-3xl border bg-card p-6 transition-all hover:-translate-y-1 hover:border-lavender hover:shadow-elegant">
                   <div className="flex items-start justify-between">
                     <span className="font-display text-sm font-bold text-lavender group-hover:text-primary-glow">{String(tools.indexOf(t) + 1).padStart(2, "0")}</span>

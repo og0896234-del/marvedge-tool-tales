@@ -67,7 +67,7 @@ export function ToolPage({ tool }: { tool: Tool }) {
           {tool.related.map((slug) => {
             const r = getTool(slug);
             return (
-              <Link key={slug} to={r.path} className="group flex items-center justify-between rounded-2xl border bg-card p-5 transition-all hover:border-lavender hover:shadow-soft">
+              <Link key={slug} to="/$slug" params={{ slug: r.slug }} className="group flex items-center justify-between rounded-2xl border bg-card p-5 transition-all hover:border-lavender hover:shadow-soft">
                 <div><p className="font-display font-bold">{r.name}</p><p className="text-sm text-muted-foreground">{r.tagline}</p></div>
                 <ArrowUpRight className="h-5 w-5 text-primary transition-transform group-hover:-translate-y-1 group-hover:translate-x-1" />
               </Link>
