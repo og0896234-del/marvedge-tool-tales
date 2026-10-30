@@ -5,7 +5,11 @@ import { parseGIF, decompressFrames } from "gifuct-js";
 import { Btn, Dropzone, DownloadBtn, ErrorNote, Field, Panel, baseName, download, fmtBytes, inputCls, rangeCls } from "./ui";
 
 const seek = (v: HTMLVideoElement, t: number) =>
-  new Promise<void>((res) => { v.onseeked = () => res(); v.currentTime = t; });
+  new Promise<void>((res) => {
+    if (Math.abs(v.currentTime - t) < 0.01 && v.readyState >= 2) return res();
+    v.onseeked = () => res();
+    v.currentTime = t;
+  });
 
 function useVideo() {
   const [file, setFile] = useState<File | null>(null);
