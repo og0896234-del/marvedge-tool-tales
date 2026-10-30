@@ -200,6 +200,7 @@ export function FormatConverter() {
   const [to, setTo] = useState("image/png");
   const [out, setOut] = useState<Out[]>([]);
   const [busy, setBusy] = useState(false);
+  const [sampling, setSampling] = useState(false);
   const run = async () => {
     setBusy(true); const res: Out[] = [];
     for (const f of files) {
@@ -216,7 +217,8 @@ export function FormatConverter() {
   const zip = async () => { const z = new JSZip(); out.forEach((o) => z.file(o.name, o.blob)); download(await z.generateAsync({ type: "blob" }), "converted-images.zip"); };
   return (
     <Panel>
-      <Dropzone accept="image/*" multiple label="Drop images to convert" onFiles={(f) => { setFiles(f); setOut([]); }} />
+      <Dropzone accept="image/*" multiple label="Drop images to convert" onFiles={(f) => { setFiles(f); setOut([]); }}
+        sample={{ label: "Try sample images", busy: sampling, onPick: async () => { setSampling(true); const [a, b] = await Promise.all([loadSample("photo"), loadSample("logo")]); setFiles([a, b]); setOut([]); setSampling(false); } }} />
       {files.length > 0 && (
         <div className="flex flex-wrap items-end gap-3">
           <Field label="Convert to">
