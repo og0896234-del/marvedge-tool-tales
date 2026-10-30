@@ -1,6 +1,9 @@
-import { AudioLines, Clapperboard, FileText, Frame, Maximize2, Palette, Quote, Repeat2, ScanQrCode, ShoppingBag, Sparkles, ListOrdered, Type, type LucideIcon } from "lucide-react";
+import { useEffect, useState } from "react";
+import { ArrowLeft, ArrowRight, Pause, Play, AudioLines, Clapperboard, FileText, Frame, Maximize2, Palette, Quote, Repeat2, ScanQrCode, ShoppingBag, Sparkles, ListOrdered, Type, type LucideIcon } from "lucide-react";
 import { toolInsights, type InsightArt } from "@/lib/tool-insights";
 import type { Tool } from "@/lib/tools";
+import { Button } from "@/components/ui/button";
+import { Carousel, CarouselContent, CarouselItem, type CarouselApi } from "@/components/ui/carousel";
 
 const artIcons: Record<InsightArt, LucideIcon> = {
   loop: Repeat2, palette: Palette, resize: Maximize2, scan: ScanQrCode,
@@ -27,6 +30,36 @@ function InsightVector({ art, quote }: { art: InsightArt; quote: boolean }) {
 
 export function ToolInsights({ tool }: { tool: Tool }) {
   const insights = toolInsights[tool.slug];
+  const [api, setApi] = useState<CarouselApi>();
+  const [active, setActive] = useState(0);
+  const [paused, setPaused] = useState(false);
+  const [interacting, setInteracting] = useState(false);
+  const [reducedMotion, setReducedMotion] = useState(false);
+
+  useEffect(() => {
+    const media = window.matchMedia("(prefers-reduced-motion: reduce)");
+    const update = () => setReducedMotion(media.matches);
+    update();
+    media.addEventListener("change", update);
+    return () => media.removeEventListener("change", update);
+  }, []);
+
+  useEffect(() => {
+    if (!api) return;
+    const update = () => setActive(api.selectedScrollSnap());
+    update();
+    api.on("select", update);
+    return () => { api.off("select", update); };
+  }, [api]);
+
+  useEffect(() => {
+    if (!api || paused || interacting || reducedMotion) return;
+    const timer = window.setInterval(() => {
+      if (!document.hidden) api.scrollNext();
+    }, 6500);
+    return () => window.clearInterval(timer);
+  }, [api, paused, interacting, reducedMotion, active]);
+
   if (!insights) return null;
   return (
     <section aria-labelledby="tool-insights-heading" className="border-y bg-muted/60">
@@ -38,19 +71,35 @@ export function ToolInsights({ tool }: { tool: Tool }) {
           </div>
           <span className="text-sm text-muted-foreground">The {tool.name} edition</span>
         </div>
-        <div className="grid gap-4 md:grid-cols-6">
+        <Carousel setApi={setApi} opts={{ loop: true, duration: reducedMotion ? 0 : 35 }} aria-label={`${tool.name} facts and quotes`}
+          onMouseEnter={() => setInteracting(true)} onMouseLeave={() => setInteracting(false)}
+          onFocusCapture={() => setInteracting(true)} onBlurCapture={(event) => { if (!event.currentTarget.contains(event.relatedTarget)) setInteracting(false); }}>
+          <CarouselContent>
           {insights.map((insight, index) => (
-            <article key={insight.title} className={`group overflow-hidden rounded-lg border p-6 ${insight.kind === "quote" ? "bg-secondary md:col-span-3" : "bg-card md:col-span-2"}`}>
-              <div className="flex items-start justify-between gap-2">
+            <CarouselItem key={insight.title} aria-hidden={active !== index} aria-label={`${index + 1} of ${insights.length}`}>
+            <article className={`group relative flex min-h-96 flex-col justify-center gap-4 overflow-hidden rounded-lg border p-6 md:min-h-72 md:flex-row md:items-center md:gap-10 md:p-10 ${insight.kind === "quote" ? "bg-secondary" : "bg-card"}`}>
+              <div className="flex shrink-0 items-center justify-center">
                 <InsightVector art={insight.art} quote={insight.kind === "quote"} />
-                <span className="pt-2 font-display text-sm font-bold text-muted-foreground">0{index + 1}</span>
               </div>
-              <p className="mb-2 mt-3 text-xs font-bold uppercase tracking-widest text-primary">{insight.kind === "fact" ? "Did you know?" : "A Marvedge one-liner"}</p>
-              <h3 className="text-lg font-bold">{insight.title}</h3>
-              {insight.kind === "quote" ? <blockquote className="mt-3 font-display text-xl font-semibold leading-relaxed">“{insight.text}”</blockquote> : <p className="mt-3 text-sm leading-relaxed text-muted-foreground">{insight.text}</p>}
+              <span className="absolute right-6 top-6 font-display text-sm font-bold text-muted-foreground">0{index + 1}</span>
+              <div className="min-w-0 max-w-2xl flex-1">
+                <p className="mb-2 text-xs font-bold uppercase tracking-widest text-primary">{insight.kind === "fact" ? "Did you know?" : "A Marvedge one-liner"}</p>
+                <h3 className="text-xl font-bold md:text-2xl">{insight.title}</h3>
+                {insight.kind === "quote" ? <blockquote className="mt-3 font-display text-xl font-semibold leading-relaxed md:text-2xl">“{insight.text}”</blockquote> : <p className="mt-3 text-base leading-relaxed text-muted-foreground md:text-lg">{insight.text}</p>}
+              </div>
             </article>
+            </CarouselItem>
           ))}
-        </div>
+          </CarouselContent>
+          <div className="mt-5 flex items-center justify-between gap-4">
+            <span className="text-sm font-medium tabular-nums text-muted-foreground">{String(active + 1).padStart(2, "0")} / {String(insights.length).padStart(2, "0")}</span>
+            <div className="flex items-center gap-2">
+              <Button variant="outline" size="icon" aria-label="Previous fact" title="Previous fact" onClick={() => api?.scrollPrev()}><ArrowLeft /></Button>
+              <Button variant="outline" size="icon" aria-label={paused || reducedMotion ? "Play facts" : "Pause facts"} title={paused || reducedMotion ? "Play facts" : "Pause facts"} disabled={reducedMotion} onClick={() => setPaused(!paused)}>{paused || reducedMotion ? <Play /> : <Pause />}</Button>
+              <Button variant="outline" size="icon" aria-label="Next fact" title="Next fact" onClick={() => api?.scrollNext()}><ArrowRight /></Button>
+            </div>
+          </div>
+        </Carousel>
       </div>
     </section>
   );

@@ -14,4 +14,4 @@
 - File tools run fully in the browser (canvas, pdf-lib, gifenc, MediaRecorder) — no uploads, no server cost.
 - AI tools call Lovable AI through server functions in `src/lib/ai.functions.ts`; gateway calls live in `ai.server.ts` — keeps the key server-side.
 - Dummy media lives in `src/assets/samples` and is handed to tools through `src/lib/samples.ts` (`loadSample`/`loadScreens`), with PDFs built at runtime by pdf-lib — every upload area must offer a "Try a sample" file so visitors can try a tool without uploading.
-- Tool-specific editorial insights live in `src/lib/tool-insights.ts` and render through the shared `ToolInsights` section after the workspace — keeps illustrated facts and clearly labeled original quotes consistent without interrupting the tools.
+- Tool-specific editorial insights live in `src/lib/tool-insights.ts` and render after the workspace through `ToolInsights` using the existing Embla carousel in a single-card loop, with pause controls and reduced-motion support — keeps editorial content consistent without interrupting the tools.
