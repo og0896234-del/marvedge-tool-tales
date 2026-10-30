@@ -300,6 +300,7 @@ export function FaviconGenerator() {
   const [icons, setIcons] = useState<{ s: number; blob: Blob; url: string }[]>([]);
   const [radius, setRadius] = useState(20);
   const [img, setImg] = useState<HTMLImageElement | null>(null);
+  const [sampling, setSampling] = useState(false);
   useEffect(() => {
     if (!img) return;
     Promise.all(SIZES.map(async (s) => {
@@ -321,7 +322,8 @@ export function FaviconGenerator() {
   };
   return (
     <Panel>
-      <Dropzone accept="image/*" label="Drop your logo (square works best)" onFiles={async ([f]) => f && setImg(await loadImage(f))} />
+      <Dropzone accept="image/*" label="Drop your logo (square works best)" onFiles={async ([f]) => f && setImg(await loadImage(f))}
+        sample={{ label: "Try a sample logo", busy: sampling, onPick: async () => { setSampling(true); setImg(await loadImage(await loadSample("logo"))); setSampling(false); } }} />
       {icons.length > 0 && (
         <>
           <div className="flex items-center gap-3 rounded-t-xl border bg-muted px-3 py-2 text-sm">
@@ -355,11 +357,27 @@ const parseRanges = (s: string, max: number) => {
   });
   return pages;
 };
+/** Dummy PDFs built in-browser so the PDF tool can be tried without a real file. */
+async function dummyPdf(title: string, pages: number, name: string) {
+  const doc = await PDFDocument.create();
+  const font = await doc.embedFont(StandardFonts.Helvetica);
+  const bold = await doc.embedFont(StandardFonts.HelveticaBold);
+  for (let i = 1; i <= pages; i++) {
+    const p = doc.addPage([595, 842]);
+    p.drawText(title, { x: 56, y: 762, size: 22, font: bold, color: rgb(0.3, 0.02, 0.52) });
+    p.drawText(`Page ${i} of ${pages}`, { x: 56, y: 726, size: 12, font, color: rgb(0.35, 0.35, 0.35) });
+    p.drawText("A dummy document created in your browser so you can try this tool.", { x: 56, y: 690, size: 12, font });
+    p.drawText("Marvedge Tools · marvedge.com", { x: 56, y: 60, size: 10, font, color: rgb(0.5, 0.5, 0.5) });
+  }
+  const bytes = await doc.save();
+  return new File([bytes as Uint8Array<ArrayBuffer>], name, { type: "application/pdf" });
+}
 export function PdfTool() {
   const [mode, setMode] = useState<"merge" | "split">("merge");
   const [files, setFiles] = useState<{ file: File; pages: number }[]>([]);
   const [range, setRange] = useState("1-2");
   const [busy, setBusy] = useState(false);
+  const [sampling, setSampling] = useState(false);
   const [err, setErr] = useState<string | null>(null);
   const add = async (fs: File[]) => {
     setErr(null);
@@ -395,7 +413,8 @@ export function PdfTool() {
           <button key={m} onClick={() => { setMode(m); setFiles([]); }} className={`rounded-full border px-4 py-2 text-sm font-bold capitalize ${mode === m ? "bg-gradient-primary text-primary-foreground" : "hover:bg-secondary"}`}>{m === "merge" ? "Merge PDFs" : "Split / extract pages"}</button>
         ))}
       </div>
-      <Dropzone accept="application/pdf" multiple={mode === "merge"} label={mode === "merge" ? "Drop PDFs to merge" : "Drop a PDF to split"} onFiles={add} />
+      <Dropzone accept="application/pdf" multiple={mode === "merge"} label={mode === "merge" ? "Drop PDFs to merge" : "Drop a PDF to split"} onFiles={add}
+        sample={{ label: mode === "merge" ? "Try two sample PDFs" : "Try a sample PDF", busy: sampling, onPick: async () => { setSampling(true); await add(mode === "merge" ? [await dummyPdf("Quarterly Report", 3, "quarterly-report.pdf"), await dummyPdf("Invoice #1042", 2, "invoice-1042.pdf")] : [await dummyPdf("Project Handbook", 4, "handbook.pdf")]); setSampling(false); } }} />
       {files.length > 0 && (
         <div className="grid gap-2">
           {files.map((f, i) => (
