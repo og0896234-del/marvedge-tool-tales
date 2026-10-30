@@ -18,12 +18,53 @@ function Output({ text }: { text: string }) {
 }
 
 type FieldDef = { key: string; label: string; type?: "textarea" | "select"; options?: string[]; placeholder?: string };
-const CONFIG: Record<string, { fields: FieldDef[]; cta: string }> = {
-  "video-summarizer": { cta: "Summarize", fields: [{ key: "Transcript", label: "Paste the video transcript", type: "textarea", placeholder: "Paste a transcript (with timestamps if you have them)…" }, { key: "Length", label: "Summary length", type: "select", options: ["Short", "Medium", "Detailed"] }] },
-  "youtube-title-generator": { cta: "Generate titles", fields: [{ key: "Topic or transcript", label: "What's your video about?", type: "textarea", placeholder: "e.g. I tested 5 budget mics for podcasting…" }, { key: "Audience", label: "Who is it for?", placeholder: "Beginner podcasters" }, { key: "Style", label: "Style", type: "select", options: ["Curiosity", "How-to", "Listicle", "Bold & punchy"] }] },
-  "content-repurposer": { cta: "Repurpose", fields: [{ key: "Source content", label: "Paste your blog post or transcript", type: "textarea" }, { key: "Voice", label: "Voice", type: "select", options: ["Same as original", "Professional", "Casual", "Witty"] }] },
-  "product-description-generator": { cta: "Write description", fields: [{ key: "Product name", label: "Product name", placeholder: "Aurora ceramic mug" }, { key: "Details", label: "Key details & features", type: "textarea", placeholder: "350ml, handmade, dishwasher safe…" }, { key: "Audience", label: "Ideal customer", placeholder: "Coffee lovers who like slow mornings" }, { key: "Tone", label: "Tone", type: "select", options: ["Warm", "Luxury", "Playful", "Technical", "Minimal"] }] },
-  "demo-script-generator": { cta: "Write demo script", fields: [{ key: "Product", label: "Product name & what it does", type: "textarea", placeholder: "Marvedge turns product walkthroughs into interactive demos…" }, { key: "Key features", label: "Features to show", type: "textarea" }, { key: "Audience", label: "Who's watching?", placeholder: "Sales leaders at B2B SaaS companies" }, { key: "Length", label: "Length", type: "select", options: ["60 seconds", "2 minutes", "3 minutes"] }] },
+type ToolCfg = { fields: FieldDef[]; cta: string; demo: Record<string, string> };
+const CONFIG: Record<string, ToolCfg> = {
+  "video-summarizer": {
+    cta: "Summarize",
+    fields: [{ key: "Transcript", label: "Paste the video transcript", type: "textarea", placeholder: "Paste a transcript (with timestamps if you have them)…" }, { key: "Length", label: "Summary length", type: "select", options: ["Short", "Medium", "Detailed"] }],
+    demo: {
+      Transcript: "00:00 Welcome back. Today I'm showing how a plain product walkthrough becomes an interactive demo.\n00:24 First, upload your recording — the tool runs in your browser, so the file never leaves your machine.\n01:02 Next, pick the steps your buyer actually cares about and hide the setup screens.\n01:41 Then put a call to action on the last step so viewers click straight through to pricing.\n02:10 Teams using these demos say sales conversations start with fewer, sharper questions.\n02:48 That's the loop: record once, publish everywhere, and see which step sells.",
+      Length: "Medium",
+    },
+  },
+  "youtube-title-generator": {
+    cta: "Generate titles",
+    fields: [{ key: "Topic or transcript", label: "What's your video about?", type: "textarea", placeholder: "e.g. I tested 5 budget mics for podcasting…" }, { key: "Audience", label: "Who is it for?", placeholder: "Beginner podcasters" }, { key: "Style", label: "Style", type: "select", options: ["Curiosity", "How-to", "Listicle", "Bold & punchy"] }],
+    demo: {
+      "Topic or transcript": "I tested five budget microphones under $50 for a full year of podcasting, and the cheapest one beat the most expensive one on every listen test.",
+      Audience: "Beginner podcasters",
+      Style: "Curiosity",
+    },
+  },
+  "content-repurposer": {
+    cta: "Repurpose",
+    fields: [{ key: "Source content", label: "Paste your blog post or transcript", type: "textarea" }, { key: "Voice", label: "Voice", type: "select", options: ["Same as original", "Professional", "Casual", "Witty"] }],
+    demo: {
+      "Source content": "Most teams record more product video than they can ever edit. Six walkthroughs a week, and only the best three get cut into something shareable — the rest sit in a drive. The fix isn't hiring another editor. It's shrinking what you already have: pull the three moments that answer the buyer's question, turn them into a loop you can post natively, and let the rest become a written guide. One recording should feed the whole channel, not one post.",
+      Voice: "Casual",
+    },
+  },
+  "product-description-generator": {
+    cta: "Write description",
+    fields: [{ key: "Product name", label: "Product name", placeholder: "Aurora ceramic mug" }, { key: "Details", label: "Key details & features", type: "textarea", placeholder: "350ml, handmade, dishwasher safe…" }, { key: "Audience", label: "Ideal customer", placeholder: "Coffee lovers who like slow mornings" }, { key: "Tone", label: "Tone", type: "select", options: ["Warm", "Luxury", "Playful", "Technical", "Minimal"] }],
+    demo: {
+      "Product name": "Aurora ceramic mug",
+      Details: "350ml stoneware, reactive lavender glaze, handmade in small batches, dishwasher and microwave safe, matte unglazed base",
+      Audience: "Coffee lovers who like slow mornings",
+      Tone: "Warm",
+    },
+  },
+  "demo-script-generator": {
+    cta: "Write demo script",
+    fields: [{ key: "Product", label: "Product name & what it does", type: "textarea", placeholder: "Marvedge turns product walkthroughs into interactive demos…" }, { key: "Key features", label: "Features to show", type: "textarea" }, { key: "Audience", label: "Who's watching?", placeholder: "Sales leaders at B2B SaaS companies" }, { key: "Length", label: "Length", type: "select", options: ["60 seconds", "2 minutes", "3 minutes"] }],
+    demo: {
+      Product: "Marvedge — turns product walkthroughs into interactive demos",
+      "Key features": "Upload a recording, choose the steps buyers care about, add a call to action, share one link",
+      Audience: "Sales leaders at B2B SaaS companies",
+      Length: "60 seconds",
+    },
+  },
 };
 
 export function AiTextTool({ slug }: { slug: string }) {
