@@ -268,7 +268,7 @@ export function FaviconGenerator() {
       {icons.length > 0 && (
         <>
           <div className="flex items-center gap-3 rounded-t-xl border bg-muted px-3 py-2 text-sm">
-            <img src={icons[0].url} alt="" className="h-4 w-4" /><span className="font-medium">Your Site — Home</span><span className="ml-auto text-muted-foreground">tab preview</span>
+            <img src={icons[0]?.url} alt="" className="h-4 w-4" /><span className="font-medium">Your Site — Home</span><span className="ml-auto text-muted-foreground">tab preview</span>
           </div>
           <div className="flex flex-wrap items-end gap-6">
             {icons.map((i) => (
@@ -311,7 +311,7 @@ export function PdfTool() {
       setFiles((prev) => (mode === "split" ? loaded.slice(0, 1) : [...prev, ...loaded]));
     } catch { setErr("One of those files couldn't be read as a PDF."); }
   };
-  const move = (i: number, d: number) => setFiles((f) => { const n = [...f]; const [x] = n.splice(i, 1); n.splice(i + d, 0, x); return n; });
+  const move = (i: number, d: number) => setFiles((f) => { const n = [...f]; const [x] = n.splice(i, 1); if (x) n.splice(i + d, 0, x); return n; });
   const run = async () => {
     setBusy(true); setErr(null);
     try {
@@ -322,12 +322,12 @@ export function PdfTool() {
           (await out.copyPages(src, src.getPageIndices())).forEach((p) => out.addPage(p));
         }
       } else {
-        const src = await PDFDocument.load(await files[0].file.arrayBuffer(), { ignoreEncryption: true });
+        const src = await PDFDocument.load(await files[0]!.file.arrayBuffer(), { ignoreEncryption: true });
         const idx = parseRanges(range, src.getPageCount());
         if (!idx.length) throw new Error("Enter page numbers like 1-3, 5");
         (await out.copyPages(src, idx)).forEach((p) => out.addPage(p));
       }
-      download(new Blob([await out.save()], { type: "application/pdf" }), mode === "merge" ? "merged.pdf" : "extracted-pages.pdf");
+      download(new Blob([(await out.save()) as Uint8Array<ArrayBuffer>], { type: "application/pdf" }), mode === "merge" ? "merged.pdf" : "extracted-pages.pdf");
     } catch (e) { setErr(e instanceof Error ? e.message : "Something went wrong."); }
     setBusy(false);
   };

@@ -92,7 +92,7 @@ async function recordVideo(vid: HTMLVideoElement, w: number, h: number, bitrate:
   rec.ondataavailable = (e) => e.data.size && chunks.push(e.data);
   await seek(vid, 0);
   vid.muted = false;
-  const done = new Promise<Blob>((res) => { rec.onstop = () => res(new Blob(chunks, { type: mime.split(";")[0] })); });
+  const done = new Promise<Blob>((res) => { rec.onstop = () => res(new Blob(chunks, { type: mime.split(";")[0] ?? "video/webm" })); });
   rec.start(500);
   let raf = 0;
   const loop = () => { draw(ctx); onProgress(Math.round((vid.currentTime / vid.duration) * 100)); raf = requestAnimationFrame(loop); };

@@ -26,7 +26,7 @@ const CONFIG: Record<string, { fields: FieldDef[]; cta: string }> = {
 };
 
 export function AiTextTool({ slug }: { slug: string }) {
-  const cfg = CONFIG[slug];
+  const cfg = CONFIG[slug]!;
   const [vals, setVals] = useState<Record<string, string>>(() => Object.fromEntries(cfg.fields.map((f) => [f.key, f.options?.[0] ?? ""])));
   const [out, setOut] = useState(""); const [busy, setBusy] = useState(false); const [err, setErr] = useState<string | null>(null);
   const run = useServerFn(runAiTool);
@@ -36,7 +36,7 @@ export function AiTextTool({ slug }: { slug: string }) {
     catch (e) { setErr(errMsg(e)); }
     setBusy(false);
   };
-  const ready = cfg.fields.filter((f) => f.type === "textarea" || !f.options).some((f) => vals[f.key]?.trim().length > 2);
+  const ready = cfg.fields.filter((f) => f.type === "textarea" || !f.options).some((f) => (vals[f.key] ?? "").trim().length > 2);
   return (
     <Panel>
       <div className="grid gap-4 md:grid-cols-2">
@@ -108,7 +108,7 @@ function buildCues(text: string, dur: number) {
   const total = parts.reduce((a, p) => a + p.length, 0) || 1; let t = 0;
   return parts.map((p) => { const len = (p.length / total) * dur; const c = { start: t, end: t + len, text: p }; t += len; return c; });
 }
-const fileToB64 = (f: File) => new Promise<string>((res) => { const r = new FileReader(); r.onload = () => res(String(r.result).split(",")[1]); r.readAsDataURL(f); });
+const fileToB64 = (f: File) => new Promise<string>((res) => { const r = new FileReader(); r.onload = () => res(String(r.result).split(",")[1] ?? ""); r.readAsDataURL(f); });
 export function SubtitleGenerator() {
   const [cues, setCues] = useState<{ start: number; end: number; text: string }[]>([]);
   const [url, setUrl] = useState(""); const [isVideo, setIsVideo] = useState(false);
