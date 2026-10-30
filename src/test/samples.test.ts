@@ -7,7 +7,7 @@ const read = (p: string) => readFileSync(resolve(root, p), "utf8");
 
 describe("dummy sample files", () => {
   const samplesSrc = read("src/lib/samples.ts");
-  const assets = [...samplesSrc.matchAll(/from "@\/assets\/samples\/([^"]+)"/g)].map((m) => m[1]);
+  const assets = [...samplesSrc.matchAll(/from "@\/assets\/samples\/([^"]+)"/g)].map((m) => m[1] ?? "");
 
   it("bundles every sample asset the loader imports, non-empty", () => {
     // photo, portrait, logo, clip, gif, narration + 3 mock screens
