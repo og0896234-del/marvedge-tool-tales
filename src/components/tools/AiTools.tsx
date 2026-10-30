@@ -92,7 +92,11 @@ export function AiTextTool({ slug }: { slug: string }) {
           </div>
         ))}
       </div>
-      <div><Btn busy={busy} disabled={!ready} onClick={go}><Sparkles className="h-4 w-4" />{busy ? "Thinking…" : cfg.cta}</Btn></div>
+      <p className="text-xs text-muted-foreground">Example content is filled in so you can see it work — replace it with your own.</p>
+      <div className="flex flex-wrap gap-2">
+        <Btn busy={busy} disabled={!ready} onClick={go}><Sparkles className="h-4 w-4" />{busy ? "Thinking…" : cfg.cta}</Btn>
+        <Btn variant="ghost" onClick={() => setVals(Object.fromEntries(cfg.fields.map((f) => [f.key, f.options?.[0] ?? ""])))}>Clear example</Btn>
+      </div>
       <ErrorNote msg={err} />
       <Output text={out} />
     </Panel>
@@ -111,6 +115,7 @@ export function ScreenshotGuide() {
   const [shots, setShots] = useState<{ url: string; note: string }[]>([]);
   const [title, setTitle] = useState("");
   const [out, setOut] = useState(""); const [busy, setBusy] = useState(false); const [err, setErr] = useState<string | null>(null);
+  const [sampling, setSampling] = useState(false);
   const run = useServerFn(runAiTool);
   const add = async (fs: File[]) => { const n = await Promise.all(fs.slice(0, 10 - shots.length).map(toDataUrl)); setShots((s) => [...s, ...n.map((url) => ({ url, note: "" }))]); };
   const go = async () => {
@@ -122,7 +127,8 @@ export function ScreenshotGuide() {
   return (
     <Panel>
       <Field label="What is this guide for?"><input className={inputCls} placeholder="How to invite a teammate" value={title} onChange={(e) => setTitle(e.target.value)} /></Field>
-      {shots.length < 10 && <Dropzone accept="image/*" multiple label="Drop screenshots in order (up to 10)" onFiles={add} />}
+      {shots.length < 10 && <Dropzone accept="image/*" multiple label="Drop screenshots in order (up to 10)" onFiles={add}
+        sample={{ label: "Try sample screenshots", busy: sampling, onPick: async () => { setSampling(true); const fs = await loadScreens(); await add(fs); setTitle((t) => t || "How to publish a Marvedge demo"); setSampling(false); }, note: "Three dummy app screens, already in order." }} />}
       {shots.length > 0 && (
         <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
           {shots.map((s, i) => (
@@ -155,6 +161,7 @@ export function SubtitleGenerator() {
   const [cues, setCues] = useState<{ start: number; end: number; text: string }[]>([]);
   const [url, setUrl] = useState(""); const [isVideo, setIsVideo] = useState(false);
   const [busy, setBusy] = useState(false); const [err, setErr] = useState<string | null>(null);
+  const [sampling, setSampling] = useState(false);
   const run = useServerFn(runTranscribe);
   const pick = async (f?: File) => {
     if (!f) return; setErr(null); setCues([]);
@@ -170,7 +177,8 @@ export function SubtitleGenerator() {
   const vtt = () => "WEBVTT\n\n" + cues.map((c) => `${ts(c.start, ".")} --> ${ts(c.end, ".")}\n${c.text}\n`).join("\n");
   return (
     <Panel>
-      <Dropzone accept="audio/*,video/mp4,video/webm,video/quicktime" label={busy ? "Transcribing… this can take a minute" : "Drop an audio or video file (under 24 MB)"} onFiles={([f]) => pick(f)} />
+      <Dropzone accept="audio/*,video/mp4,video/webm,video/quicktime" label={busy ? "Transcribing… this can take a minute" : "Drop an audio or video file (under 24 MB)"} onFiles={([f]) => pick(f)}
+        sample={{ label: "Try a sample narration", busy: sampling, onPick: async () => { setSampling(true); await pick(await loadSample("narration")); setSampling(false); }, note: "A dummy 15-second voiceover — we'll caption it for you." }} />
       <ErrorNote msg={err} />
       {url && (isVideo ? <video src={url} controls className="max-h-72 rounded-2xl" /> : <audio src={url} controls className="w-full" />)}
       {cues.length > 0 && (
