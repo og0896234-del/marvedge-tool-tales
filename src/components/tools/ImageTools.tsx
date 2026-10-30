@@ -1,8 +1,9 @@
 import { useEffect, useState } from "react";
 import QRCode from "qrcode";
 import JSZip from "jszip";
-import { PDFDocument } from "pdf-lib";
+import { PDFDocument, StandardFonts, rgb } from "pdf-lib";
 import { ArrowDown, ArrowUp, X } from "lucide-react";
+import { loadSample } from "@/lib/samples";
 import { Btn, Dropzone, DownloadBtn, ErrorNote, Field, Panel, baseName, canvasBlob, download, extFor, fmtBytes, inputCls, loadImage, rangeCls } from "./ui";
 
 type Out = { name: string; before: number; blob: Blob; url: string };
@@ -14,6 +15,7 @@ export function ImageCompressor() {
   const [format, setFormat] = useState("image/webp");
   const [out, setOut] = useState<Out[]>([]);
   const [busy, setBusy] = useState(false);
+  const [sampling, setSampling] = useState(false);
   const run = async () => {
     setBusy(true);
     const res: Out[] = [];
@@ -32,7 +34,8 @@ export function ImageCompressor() {
   const saved = out.reduce((s, o) => s + o.before - o.blob.size, 0);
   return (
     <Panel>
-      <Dropzone accept="image/jpeg,image/png,image/webp" multiple label="Drop JPG, PNG or WebP images" onFiles={(f) => { setFiles(f); setOut([]); }} />
+      <Dropzone accept="image/jpeg,image/png,image/webp" multiple label="Drop JPG, PNG or WebP images" onFiles={(f) => { setFiles(f); setOut([]); }}
+        sample={{ label: "Try a sample photo", busy: sampling, onPick: async () => { setSampling(true); const f = await loadSample("photo"); setFiles([f]); setOut([]); setSampling(false); } }} />
       {files.length > 0 && (
         <div className="grid gap-4 md:grid-cols-3">
           <Field label={`Quality: ${quality}%`}><input type="range" min={10} max={95} value={quality} onChange={(e) => setQuality(+e.target.value)} className={rangeCls} /></Field>
