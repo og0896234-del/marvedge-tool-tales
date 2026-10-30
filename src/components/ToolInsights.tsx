@@ -78,7 +78,7 @@ export function ToolInsights({ tool }: { tool: Tool }) {
               <div className="flex shrink-0 items-center justify-center">
                 <InsightVector art={insight.art} quote={insight.kind === "quote"} />
               </div>
-              <span className="absolute right-6 top-6 font-display text-sm font-bold text-muted-foreground">0{index + 1}</span>
+              <span className="absolute right-6 top-6 font-display text-sm font-bold text-muted-foreground">{String(index + 1).padStart(2, "0")}</span>
               <div className="min-w-0 max-w-2xl flex-1">
                 <p className="mb-2 text-xs font-bold uppercase tracking-widest text-primary">{insight.kind === "fact" ? "Did you know?" : "A Marvedge one-liner"}</p>
                 <h3 className="text-xl font-bold md:text-2xl">{insight.title}</h3>
