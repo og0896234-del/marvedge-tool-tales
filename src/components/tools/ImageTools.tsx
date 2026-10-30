@@ -159,7 +159,7 @@ export function ImageResizer() {
             {result && <img src={result.url} alt="Preview" className="max-h-96 max-w-full rounded-lg shadow-soft" />}
           </div>
           <div className="grid content-start gap-4">
-            <Field label="Preset">
+            <Field label="Size preset — by country & purpose" hint="Common official sizes; always confirm on the portal you upload to.">
               <select className={inputCls} defaultValue="" onChange={(e) => { const p = PRESETS[+e.target.value]; if (p) { setW(p.w); setH(p.h); setLock(false); setKb(p.kb ?? ""); } }}>
                 <option value="" disabled>Choose a preset…</option>
                 {(() => { let i = 0; return PRESET_GROUPS.map((g) => (
