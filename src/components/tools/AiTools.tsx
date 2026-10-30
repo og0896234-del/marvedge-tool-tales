@@ -177,7 +177,7 @@ export function VoiceoverGenerator() {
       <Field label="Voice">
         <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
           {VOICES.map(([v, d]) => (
-            <button key={v} onClick={() => setVoice(v)} className={`rounded-2xl border p-3 text-left ${voice === v ? "border-primary bg-secondary" : "hover:bg-muted"}`}>
+            <button key={v} onClick={() => setVoice(v ?? "Kore")} className={`rounded-2xl border p-3 text-left ${voice === v ? "border-primary bg-secondary" : "hover:bg-muted"}`}>
               <p className="font-bold">{v}</p><p className="text-xs text-muted-foreground">{d}</p>
             </button>
           ))}
