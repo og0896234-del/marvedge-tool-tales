@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import gifenc from "gifenc";
 const { GIFEncoder, quantize, applyPalette } = gifenc;
 import { parseGIF, decompressFrames } from "gifuct-js";
+import { loadSample } from "@/lib/samples";
 import { Btn, Dropzone, DownloadBtn, ErrorNote, Field, Panel, baseName, download, fmtBytes, inputCls, rangeCls } from "./ui";
 
 const seek = (v: HTMLVideoElement, t: number) =>
@@ -15,9 +16,11 @@ function useVideo() {
   const [file, setFile] = useState<File | null>(null);
   const [url, setUrl] = useState("");
   const [dur, setDur] = useState(0);
+  const [sampling, setSampling] = useState(false);
   const ref = useRef<HTMLVideoElement>(null);
   const pick = (f?: File) => { if (!f) return; setFile(f); setUrl(URL.createObjectURL(f)); };
-  return { file, url, dur, setDur, ref, pick, reset: () => { setFile(null); setUrl(""); } };
+  const pickSample = async () => { setSampling(true); try { pick(await loadSample("clip")); } finally { setSampling(false); } };
+  return { file, url, dur, setDur, ref, pick, pickSample, sampling, reset: () => { setFile(null); setUrl(""); } };
 }
 
 type Res = { blob: Blob; url: string; name: string };
@@ -60,7 +63,8 @@ export function Mp4ToGif() {
   };
   return (
     <Panel>
-      {!v.url ? <Dropzone accept="video/*" label="Drop an MP4, MOV or WebM clip" onFiles={([f]) => v.pick(f)} /> : (
+      {!v.url ? <Dropzone accept="video/*" label="Drop an MP4, MOV or WebM clip" onFiles={([f]) => v.pick(f)}
+        sample={{ label: "Try a sample clip", busy: v.sampling, onPick: v.pickSample, note: "A 5-second dummy video so you can make a GIF straight away." }} /> : (
         <div className="grid gap-6 lg:grid-cols-2">
           <div className="grid gap-3">
             <video ref={v.ref} src={v.url} controls muted className="w-full rounded-2xl bg-ink" onLoadedMetadata={(e) => { const d = e.currentTarget.duration; v.setDur(d); setEnd(Math.min(3, d)); }} />
@@ -121,7 +125,8 @@ export function VideoCompressor() {
   };
   return (
     <Panel>
-      {!v.url ? <Dropzone accept="video/*" label="Drop a video to compress" onFiles={([f]) => v.pick(f)} /> : (
+      {!v.url ? <Dropzone accept="video/*" label="Drop a video to compress" onFiles={([f]) => v.pick(f)}
+        sample={{ label: "Try a sample clip", busy: v.sampling, onPick: v.pickSample, note: "A 5-second dummy video — compression runs in real time." }} /> : (
         <div className="grid gap-6 lg:grid-cols-2">
           <video ref={v.ref} src={v.url} controls playsInline className="w-full rounded-2xl bg-ink" onLoadedMetadata={(e) => v.setDur(e.currentTarget.duration)} />
           <div className="grid content-start gap-4">
@@ -174,7 +179,8 @@ export function AspectRatio() {
   };
   return (
     <Panel>
-      {!v.url ? <Dropzone accept="video/*" label="Drop a video to reframe" onFiles={([f]) => v.pick(f)} /> : (
+      {!v.url ? <Dropzone accept="video/*" label="Drop a video to reframe" onFiles={([f]) => v.pick(f)}
+        sample={{ label: "Try a sample clip", busy: v.sampling, onPick: v.pickSample, note: "A 5-second dummy video so you can preview every ratio." }} /> : (
         <div className="grid gap-6 lg:grid-cols-[1fr_1fr_280px]">
           <video ref={v.ref} src={v.url} controls muted playsInline className="w-full rounded-2xl bg-ink" />
           <div className="flex items-center justify-center rounded-2xl bg-muted p-3 grid-dots"><canvas ref={preview} className="max-h-80 max-w-full rounded-lg shadow-soft" /></div>
@@ -205,6 +211,7 @@ export function GifCompressor() {
   const [file, setFile] = useState<File | null>(null);
   const [scale, setScale] = useState(75); const [skip, setSkip] = useState(1); const [colors, setColors] = useState(64);
   const [busy, setBusy] = useState(false); const [res, setRes] = useState<Res | null>(null); const [err, setErr] = useState<string | null>(null);
+  const [sampling, setSampling] = useState(false);
   const run = async () => {
     if (!file) return; setBusy(true); setErr(null); setRes(null);
     try {
@@ -241,7 +248,8 @@ export function GifCompressor() {
   };
   return (
     <Panel>
-      <Dropzone accept="image/gif" label={file ? `Selected: ${file.name} (${fmtBytes(file.size)})` : "Drop a GIF to compress"} onFiles={([f]) => { setFile(f ?? null); setRes(null); }} />
+      <Dropzone accept="image/gif" label={file ? `Selected: ${file.name} (${fmtBytes(file.size)})` : "Drop a GIF to compress"} onFiles={([f]) => { setFile(f ?? null); setRes(null); }}
+        sample={{ label: "Try a sample GIF", busy: sampling, onPick: async () => { setSampling(true); const f = await loadSample("gif"); setFile(f); setRes(null); setSampling(false); }, note: "A dummy animation so you can see the size drop before using your own." }} />
       {file && (
         <div className="grid gap-4 md:grid-cols-4">
           <Field label={`Size ${scale}%`}><input type="range" min={20} max={100} step={5} value={scale} onChange={(e) => setScale(+e.target.value)} className={rangeCls} /></Field>

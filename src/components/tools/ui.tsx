@@ -1,5 +1,8 @@
 import { useRef, useState, type ReactNode } from "react";
-import { Upload, Download, Copy, Check, Loader2 } from "lucide-react";
+import { Upload, Download, Copy, Check, Loader2, Wand2 } from "lucide-react";
+
+export const SAMPLE_NOTE = "A dummy file so you can see the result before uploading your own.";
+export type Sample = { label: string; onPick: () => void; busy?: boolean; note?: string };
 
 export const fmtBytes = (n: number) =>
   n < 1024 ? `${n} B` : n < 1048576 ? `${(n / 1024).toFixed(1)} KB` : `${(n / 1048576).toFixed(2)} MB`;
@@ -13,7 +16,7 @@ export function download(blob: Blob | string, name: string) {
   if (typeof blob !== "string") setTimeout(() => URL.revokeObjectURL(url), 2000);
 }
 
-export function Dropzone({ accept, multiple, onFiles, label }: { accept: string; multiple?: boolean; onFiles: (f: File[]) => void; label: string }) {
+export function Dropzone({ accept, multiple, onFiles, label, sample }: { accept: string; multiple?: boolean; onFiles: (f: File[]) => void; label: string; sample?: Sample }) {
   const ref = useRef<HTMLInputElement>(null);
   const [over, setOver] = useState(false);
   return (
@@ -27,6 +30,18 @@ export function Dropzone({ accept, multiple, onFiles, label }: { accept: string;
       <span className="flex h-12 w-12 items-center justify-center rounded-full bg-gradient-primary text-primary-foreground"><Upload className="h-5 w-5" /></span>
       <p className="font-semibold">{label}</p>
       <p className="text-sm text-muted-foreground">Drag & drop or click to choose · processed on your device</p>
+      {sample && (
+        <button
+          type="button"
+          disabled={sample.busy}
+          onClick={(e) => { e.stopPropagation(); sample.onPick(); }}
+          className="mt-1 inline-flex items-center gap-2 rounded-full border border-primary/30 bg-background px-4 py-2 text-sm font-bold text-primary shadow-soft transition-colors hover:bg-secondary disabled:opacity-60"
+        >
+          {sample.busy ? <Loader2 className="h-4 w-4 animate-spin" /> : <Wand2 className="h-4 w-4" />}
+          {sample.busy ? "Loading sample…" : sample.label}
+        </button>
+      )}
+      {sample && <p className="text-xs text-muted-foreground">{sample.note ?? SAMPLE_NOTE}</p>}
       <input ref={ref} type="file" hidden accept={accept} multiple={multiple}
         onChange={(e) => { onFiles(Array.from(e.target.files ?? [])); e.target.value = ""; }} />
     </div>

@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
 import { Sparkles, X } from "lucide-react";
 import { runAiTool, runTranscribe, runVoiceover } from "@/lib/ai.functions";
+import { loadSample, loadScreens } from "@/lib/samples";
 import { Btn, CopyBtn, DownloadBtn, Dropzone, ErrorNote, Field, Panel, download, inputCls, loadImage } from "./ui";
 
 const errMsg = (e: unknown) => (e instanceof Error ? e.message : "Something went wrong. Please try again.");
@@ -17,17 +18,58 @@ function Output({ text }: { text: string }) {
 }
 
 type FieldDef = { key: string; label: string; type?: "textarea" | "select"; options?: string[]; placeholder?: string };
-const CONFIG: Record<string, { fields: FieldDef[]; cta: string }> = {
-  "video-summarizer": { cta: "Summarize", fields: [{ key: "Transcript", label: "Paste the video transcript", type: "textarea", placeholder: "Paste a transcript (with timestamps if you have them)…" }, { key: "Length", label: "Summary length", type: "select", options: ["Short", "Medium", "Detailed"] }] },
-  "youtube-title-generator": { cta: "Generate titles", fields: [{ key: "Topic or transcript", label: "What's your video about?", type: "textarea", placeholder: "e.g. I tested 5 budget mics for podcasting…" }, { key: "Audience", label: "Who is it for?", placeholder: "Beginner podcasters" }, { key: "Style", label: "Style", type: "select", options: ["Curiosity", "How-to", "Listicle", "Bold & punchy"] }] },
-  "content-repurposer": { cta: "Repurpose", fields: [{ key: "Source content", label: "Paste your blog post or transcript", type: "textarea" }, { key: "Voice", label: "Voice", type: "select", options: ["Same as original", "Professional", "Casual", "Witty"] }] },
-  "product-description-generator": { cta: "Write description", fields: [{ key: "Product name", label: "Product name", placeholder: "Aurora ceramic mug" }, { key: "Details", label: "Key details & features", type: "textarea", placeholder: "350ml, handmade, dishwasher safe…" }, { key: "Audience", label: "Ideal customer", placeholder: "Coffee lovers who like slow mornings" }, { key: "Tone", label: "Tone", type: "select", options: ["Warm", "Luxury", "Playful", "Technical", "Minimal"] }] },
-  "demo-script-generator": { cta: "Write demo script", fields: [{ key: "Product", label: "Product name & what it does", type: "textarea", placeholder: "Marvedge turns product walkthroughs into interactive demos…" }, { key: "Key features", label: "Features to show", type: "textarea" }, { key: "Audience", label: "Who's watching?", placeholder: "Sales leaders at B2B SaaS companies" }, { key: "Length", label: "Length", type: "select", options: ["60 seconds", "2 minutes", "3 minutes"] }] },
+type ToolCfg = { fields: FieldDef[]; cta: string; demo: Record<string, string> };
+const CONFIG: Record<string, ToolCfg> = {
+  "video-summarizer": {
+    cta: "Summarize",
+    fields: [{ key: "Transcript", label: "Paste the video transcript", type: "textarea", placeholder: "Paste a transcript (with timestamps if you have them)…" }, { key: "Length", label: "Summary length", type: "select", options: ["Short", "Medium", "Detailed"] }],
+    demo: {
+      Transcript: "00:00 Welcome back. Today I'm showing how a plain product walkthrough becomes an interactive demo.\n00:24 First, upload your recording — the tool runs in your browser, so the file never leaves your machine.\n01:02 Next, pick the steps your buyer actually cares about and hide the setup screens.\n01:41 Then put a call to action on the last step so viewers click straight through to pricing.\n02:10 Teams using these demos say sales conversations start with fewer, sharper questions.\n02:48 That's the loop: record once, publish everywhere, and see which step sells.",
+      Length: "Medium",
+    },
+  },
+  "youtube-title-generator": {
+    cta: "Generate titles",
+    fields: [{ key: "Topic or transcript", label: "What's your video about?", type: "textarea", placeholder: "e.g. I tested 5 budget mics for podcasting…" }, { key: "Audience", label: "Who is it for?", placeholder: "Beginner podcasters" }, { key: "Style", label: "Style", type: "select", options: ["Curiosity", "How-to", "Listicle", "Bold & punchy"] }],
+    demo: {
+      "Topic or transcript": "I tested five budget microphones under $50 for a full year of podcasting, and the cheapest one beat the most expensive one on every listen test.",
+      Audience: "Beginner podcasters",
+      Style: "Curiosity",
+    },
+  },
+  "content-repurposer": {
+    cta: "Repurpose",
+    fields: [{ key: "Source content", label: "Paste your blog post or transcript", type: "textarea" }, { key: "Voice", label: "Voice", type: "select", options: ["Same as original", "Professional", "Casual", "Witty"] }],
+    demo: {
+      "Source content": "Most teams record more product video than they can ever edit. Six walkthroughs a week, and only the best three get cut into something shareable — the rest sit in a drive. The fix isn't hiring another editor. It's shrinking what you already have: pull the three moments that answer the buyer's question, turn them into a loop you can post natively, and let the rest become a written guide. One recording should feed the whole channel, not one post.",
+      Voice: "Casual",
+    },
+  },
+  "product-description-generator": {
+    cta: "Write description",
+    fields: [{ key: "Product name", label: "Product name", placeholder: "Aurora ceramic mug" }, { key: "Details", label: "Key details & features", type: "textarea", placeholder: "350ml, handmade, dishwasher safe…" }, { key: "Audience", label: "Ideal customer", placeholder: "Coffee lovers who like slow mornings" }, { key: "Tone", label: "Tone", type: "select", options: ["Warm", "Luxury", "Playful", "Technical", "Minimal"] }],
+    demo: {
+      "Product name": "Aurora ceramic mug",
+      Details: "350ml stoneware, reactive lavender glaze, handmade in small batches, dishwasher and microwave safe, matte unglazed base",
+      Audience: "Coffee lovers who like slow mornings",
+      Tone: "Warm",
+    },
+  },
+  "demo-script-generator": {
+    cta: "Write demo script",
+    fields: [{ key: "Product", label: "Product name & what it does", type: "textarea", placeholder: "Marvedge turns product walkthroughs into interactive demos…" }, { key: "Key features", label: "Features to show", type: "textarea" }, { key: "Audience", label: "Who's watching?", placeholder: "Sales leaders at B2B SaaS companies" }, { key: "Length", label: "Length", type: "select", options: ["60 seconds", "2 minutes", "3 minutes"] }],
+    demo: {
+      Product: "Marvedge — turns product walkthroughs into interactive demos",
+      "Key features": "Upload a recording, choose the steps buyers care about, add a call to action, share one link",
+      Audience: "Sales leaders at B2B SaaS companies",
+      Length: "60 seconds",
+    },
+  },
 };
 
 export function AiTextTool({ slug }: { slug: string }) {
   const cfg = CONFIG[slug]!;
-  const [vals, setVals] = useState<Record<string, string>>(() => Object.fromEntries(cfg.fields.map((f) => [f.key, f.options?.[0] ?? ""])));
+  const [vals, setVals] = useState<Record<string, string>>(() => Object.fromEntries(cfg.fields.map((f) => [f.key, cfg.demo?.[f.key] ?? f.options?.[0] ?? ""])));
   const [out, setOut] = useState(""); const [busy, setBusy] = useState(false); const [err, setErr] = useState<string | null>(null);
   const run = useServerFn(runAiTool);
   const go = async () => {
@@ -50,7 +92,11 @@ export function AiTextTool({ slug }: { slug: string }) {
           </div>
         ))}
       </div>
-      <div><Btn busy={busy} disabled={!ready} onClick={go}><Sparkles className="h-4 w-4" />{busy ? "Thinking…" : cfg.cta}</Btn></div>
+      <p className="text-xs text-muted-foreground">Example content is filled in so you can see it work — replace it with your own.</p>
+      <div className="flex flex-wrap gap-2">
+        <Btn busy={busy} disabled={!ready} onClick={go}><Sparkles className="h-4 w-4" />{busy ? "Thinking…" : cfg.cta}</Btn>
+        <Btn variant="ghost" onClick={() => setVals(Object.fromEntries(cfg.fields.map((f) => [f.key, f.options?.[0] ?? ""])))}>Clear example</Btn>
+      </div>
       <ErrorNote msg={err} />
       <Output text={out} />
     </Panel>
@@ -69,6 +115,7 @@ export function ScreenshotGuide() {
   const [shots, setShots] = useState<{ url: string; note: string }[]>([]);
   const [title, setTitle] = useState("");
   const [out, setOut] = useState(""); const [busy, setBusy] = useState(false); const [err, setErr] = useState<string | null>(null);
+  const [sampling, setSampling] = useState(false);
   const run = useServerFn(runAiTool);
   const add = async (fs: File[]) => { const n = await Promise.all(fs.slice(0, 10 - shots.length).map(toDataUrl)); setShots((s) => [...s, ...n.map((url) => ({ url, note: "" }))]); };
   const go = async () => {
@@ -80,7 +127,8 @@ export function ScreenshotGuide() {
   return (
     <Panel>
       <Field label="What is this guide for?"><input className={inputCls} placeholder="How to invite a teammate" value={title} onChange={(e) => setTitle(e.target.value)} /></Field>
-      {shots.length < 10 && <Dropzone accept="image/*" multiple label="Drop screenshots in order (up to 10)" onFiles={add} />}
+      {shots.length < 10 && <Dropzone accept="image/*" multiple label="Drop screenshots in order (up to 10)" onFiles={add}
+        sample={{ label: "Try sample screenshots", busy: sampling, onPick: async () => { setSampling(true); const fs = await loadScreens(); await add(fs); setTitle((t) => t || "How to publish a Marvedge demo"); setSampling(false); }, note: "Three dummy app screens, already in order." }} />}
       {shots.length > 0 && (
         <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
           {shots.map((s, i) => (
@@ -113,6 +161,7 @@ export function SubtitleGenerator() {
   const [cues, setCues] = useState<{ start: number; end: number; text: string }[]>([]);
   const [url, setUrl] = useState(""); const [isVideo, setIsVideo] = useState(false);
   const [busy, setBusy] = useState(false); const [err, setErr] = useState<string | null>(null);
+  const [sampling, setSampling] = useState(false);
   const run = useServerFn(runTranscribe);
   const pick = async (f?: File) => {
     if (!f) return; setErr(null); setCues([]);
@@ -128,7 +177,8 @@ export function SubtitleGenerator() {
   const vtt = () => "WEBVTT\n\n" + cues.map((c) => `${ts(c.start, ".")} --> ${ts(c.end, ".")}\n${c.text}\n`).join("\n");
   return (
     <Panel>
-      <Dropzone accept="audio/*,video/mp4,video/webm,video/quicktime" label={busy ? "Transcribing… this can take a minute" : "Drop an audio or video file (under 24 MB)"} onFiles={([f]) => pick(f)} />
+      <Dropzone accept="audio/*,video/mp4,video/webm,video/quicktime" label={busy ? "Transcribing… this can take a minute" : "Drop an audio or video file (under 24 MB)"} onFiles={([f]) => pick(f)}
+        sample={{ label: "Try a sample narration", busy: sampling, onPick: async () => { setSampling(true); await pick(await loadSample("narration")); setSampling(false); }, note: "A dummy 15-second voiceover — we'll caption it for you." }} />
       <ErrorNote msg={err} />
       {url && (isVideo ? <video src={url} controls className="max-h-72 rounded-2xl" /> : <audio src={url} controls className="w-full" />)}
       {cues.length > 0 && (
