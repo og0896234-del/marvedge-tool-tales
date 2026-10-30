@@ -1,5 +1,8 @@
 import { useRef, useState, type ReactNode } from "react";
-import { Upload, Download, Copy, Check, Loader2 } from "lucide-react";
+import { Upload, Download, Copy, Check, Loader2, Wand2 } from "lucide-react";
+
+export const SAMPLE_NOTE = "A dummy file so you can see the result before uploading your own.";
+export type Sample = { label: string; onPick: () => void; busy?: boolean; note?: string };
 
 export const fmtBytes = (n: number) =>
   n < 1024 ? `${n} B` : n < 1048576 ? `${(n / 1024).toFixed(1)} KB` : `${(n / 1048576).toFixed(2)} MB`;
