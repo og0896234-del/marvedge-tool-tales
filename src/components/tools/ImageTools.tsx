@@ -129,6 +129,7 @@ export function ImageResizer() {
   const [name, setName] = useState("image");
   const [w, setW] = useState(0); const [h, setH] = useState(0);
   const [lock, setLock] = useState(true);
+  const [sampling, setSampling] = useState(false);
   const [fit, setFit] = useState<"cover" | "contain" | "stretch">("cover");
   const [kb, setKb] = useState<number | "">("");
   const [result, setResult] = useState<{ blob: Blob; url: string } | null>(null);
@@ -152,10 +153,12 @@ export function ImageResizer() {
     if (kb) while (b.size > kb * 1024 && q > 0.1) { q -= 0.07; b = await canvasBlob(c, "image/jpeg", q); }
     download(b, `${name}-${w}x${h}.jpg`);
   };
+  const pick = async (f: File) => { const i = await loadImage(f); setImg(i); setName(baseName(f.name)); setW(i.naturalWidth); setH(i.naturalHeight); };
   return (
     <Panel>
       {!img ? (
-        <Dropzone accept="image/*" label="Drop an image to resize or crop" onFiles={async ([f]) => { if (!f) return; const i = await loadImage(f); setImg(i); setName(baseName(f.name)); setW(i.naturalWidth); setH(i.naturalHeight); }} />
+        <Dropzone accept="image/*" label="Drop an image to resize or crop" onFiles={async ([f]) => { if (f) await pick(f); }}
+          sample={{ label: "Try a sample passport photo", busy: sampling, onPick: async () => { setSampling(true); await pick(await loadSample("portrait")); setSampling(false); } }} />
       ) : (
         <div className="grid gap-6 lg:grid-cols-[1fr_320px]">
           <div className="flex min-h-64 items-center justify-center rounded-2xl bg-muted grid-dots p-4">
