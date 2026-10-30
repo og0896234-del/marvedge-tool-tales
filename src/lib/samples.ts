@@ -3,7 +3,7 @@
 import photoUrl from "@/assets/samples/photo.jpg";
 import portraitUrl from "@/assets/samples/portrait.jpg";
 import logoUrl from "@/assets/samples/logo.png";
-import clipUrl from "@/assets/samples/clip.mp4";
+import clipUrl from "@/assets/samples/clip.webm";
 import gifUrl from "@/assets/samples/animation.gif";
 import narrationUrl from "@/assets/samples/narration.mp3";
 import screen1 from "@/assets/samples/screen-1.png";
@@ -16,7 +16,7 @@ const ASSETS: Record<SampleKind, { url: string; name: string; type: string }> = 
   photo: { url: photoUrl, name: "product-photo.jpg", type: "image/jpeg" },
   portrait: { url: portraitUrl, name: "passport-photo.jpg", type: "image/jpeg" },
   logo: { url: logoUrl, name: "marvedge-logo.png", type: "image/png" },
-  clip: { url: clipUrl, name: "product-walkthrough.mp4", type: "video/mp4" },
+  clip: { url: clipUrl, name: "product-walkthrough.webm", type: "video/webm" },
   gif: { url: gifUrl, name: "loop.gif", type: "image/gif" },
   narration: { url: narrationUrl, name: "narration.mp3", type: "audio/mpeg" },
 };
