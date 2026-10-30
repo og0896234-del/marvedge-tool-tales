@@ -33,7 +33,6 @@ export function ToolInsights({ tool }: { tool: Tool }) {
   const [api, setApi] = useState<CarouselApi>();
   const [active, setActive] = useState(0);
   const [paused, setPaused] = useState(false);
-  const [interacting, setInteracting] = useState(false);
   const [reducedMotion, setReducedMotion] = useState(false);
 
   useEffect(() => {
@@ -53,12 +52,12 @@ export function ToolInsights({ tool }: { tool: Tool }) {
   }, [api]);
 
   useEffect(() => {
-    if (!api || paused || interacting || reducedMotion) return;
+    if (!api || paused || reducedMotion) return;
     const timer = window.setInterval(() => {
       if (!document.hidden) api.scrollNext();
-    }, 6500);
+    }, 4500);
     return () => window.clearInterval(timer);
-  }, [api, paused, interacting, reducedMotion, active]);
+  }, [api, paused, reducedMotion, active]);
 
   if (!insights) return null;
   return (
@@ -71,9 +70,7 @@ export function ToolInsights({ tool }: { tool: Tool }) {
           </div>
           <span className="text-sm text-muted-foreground">The {tool.name} edition</span>
         </div>
-        <Carousel setApi={setApi} opts={{ loop: true, duration: reducedMotion ? 0 : 35 }} aria-label={`${tool.name} facts and quotes`}
-          onMouseEnter={() => setInteracting(true)} onMouseLeave={() => setInteracting(false)}
-          onFocusCapture={() => setInteracting(true)} onBlurCapture={(event) => { if (!event.currentTarget.contains(event.relatedTarget)) setInteracting(false); }}>
+        <Carousel setApi={setApi} opts={{ loop: true, duration: reducedMotion ? 0 : 45 }} aria-label={`${tool.name} facts and quotes`}>
           <CarouselContent>
           {insights.map((insight, index) => (
             <CarouselItem key={insight.title} aria-hidden={active !== index} aria-label={`${index + 1} of ${insights.length}`}>
