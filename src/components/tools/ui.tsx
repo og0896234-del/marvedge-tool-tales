@@ -47,19 +47,6 @@ export function Dropzone({ accept, multiple, onFiles, label, sample }: { accept:
     </div>
   );
 }
-      onDragOver={(e) => { e.preventDefault(); setOver(true); }}
-      onDragLeave={() => setOver(false)}
-      onDrop={(e) => { e.preventDefault(); setOver(false); onFiles(Array.from(e.dataTransfer.files)); }}
-      className={`flex cursor-pointer flex-col items-center justify-center gap-2 rounded-2xl border-2 border-dashed p-8 text-center transition-colors ${over ? "border-primary bg-secondary" : "border-lavender hover:bg-muted"}`}
-    >
-      <span className="flex h-12 w-12 items-center justify-center rounded-full bg-gradient-primary text-primary-foreground"><Upload className="h-5 w-5" /></span>
-      <p className="font-semibold">{label}</p>
-      <p className="text-sm text-muted-foreground">Drag & drop or click to choose · processed on your device</p>
-      <input ref={ref} type="file" hidden accept={accept} multiple={multiple}
-        onChange={(e) => { onFiles(Array.from(e.target.files ?? [])); e.target.value = ""; }} />
-    </div>
-  );
-}
 
 export function Field({ label, children, hint }: { label: string; children: ReactNode; hint?: string }) {
   return (
