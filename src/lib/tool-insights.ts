@@ -1,7 +1,7 @@
 export type InsightArt = "loop" | "palette" | "resize" | "scan" | "film" | "file" | "spark" | "voice" | "text" | "steps" | "shop" | "frame";
 export type ToolInsight = { kind: "fact" | "quote"; title: string; text: string; art: InsightArt };
 type Entry = [title: string, text: string, art: InsightArt];
-const collection = (facts: [Entry, Entry, Entry], quotes: [Entry, Entry]): ToolInsight[] => [
+const collection = (facts: [Entry, Entry, Entry], quotes: [Entry, Entry, Entry, Entry, Entry, Entry, Entry]): ToolInsight[] => [
   ...facts.map(([title, text, art]) => ({ kind: "fact" as const, title, text, art })),
   ...quotes.map(([title, text, art]) => ({ kind: "quote" as const, title, text, art })),
 ];
@@ -15,6 +15,11 @@ export const toolInsights: Record<string, ToolInsight[]> = {
   ], [
     ["The encore", "If it was funny once, let it audition for forever.", "loop"],
     ["Tiny cinema", "Three seconds. Zero dialogue. Surprisingly strong main-character energy.", "film"],
+    ["Groundhog file", "My GIF has seen the ending. It still insists on starting over.", "loop"],
+    ["Budget blockbuster", "The production budget was one clip and an unreasonable amount of enthusiasm.", "film"],
+    ["Repeat offender", "I asked my GIF to move on. It took that personally.", "loop"],
+    ["Reaction department", "Why write a paragraph when a three-second eyebrow can handle the meeting?", "frame"],
+    ["Forever loading?", "It's not stuck. It's just very committed to the bit.", "spark"],
   ]),
   "image-compressor": collection([
     ["Pixels aren't kilograms", "Two images with the same dimensions can have very different file sizes. Format and detail matter.", "resize"],
@@ -23,6 +28,11 @@ export const toolInsights: Record<string, ToolInsight[]> = {
   ], [
     ["Travel light", "Your photo needs a carry-on, not a moving truck.", "file"],
     ["Less baggage", "Big personality. Small attachment.", "spark"],
+    ["The byte diet", "My photo cut carbs. Specifically, the kilobyte kind.", "resize"],
+    ["Inbox bouncer", "The attachment limit said 'not tonight'. My compressed photo got on the guest list.", "file"],
+    ["Weightless glamour", "Same pose. Less storage-space attitude.", "frame"],
+    ["Loading intervention", "My website stopped buffering long enough to say thank you.", "spark"],
+    ["Photo luggage", "I told the image to pack light. It brought only its best pixels.", "palette"],
   ]),
   "qr-code-generator": collection([
     ["Corners with a job", "Those three large corner squares help scanners locate and orient a QR code.", "scan"],
@@ -31,6 +41,11 @@ export const toolInsights: Record<string, ToolInsight[]> = {
   ], [
     ["Shortcut to somewhere", "A tiny square with a surprisingly busy social life.", "scan"],
     ["No spelling bee", "Why type a long URL when your camera can do the introductions?", "text"],
+    ["Square networking", "I'm terrible at introductions. This square hands out my link for me.", "scan"],
+    ["Wi-Fi romance", "Our love language is scanning the Wi-Fi code instead of spelling the password.", "voice"],
+    ["Menu detective", "I pointed my phone at a square and somehow ordered fries.", "scan"],
+    ["Business-card promotion", "My business card got a portal. I still have a commute.", "file"],
+    ["Camera confidence", "The only time staring at a square counts as being productive.", "frame"],
   ]),
   "video-compressor": collection([
     ["Time has weight", "At the same bitrate, a longer video needs more data. Even files pay rent by the minute.", "film"],
@@ -39,6 +54,11 @@ export const toolInsights: Record<string, ToolInsight[]> = {
   ], [
     ["Inbox peace treaty", "Keep the plot twist. Lose the attachment drama.", "file"],
     ["Lightweight champion", "Your video can be impressive without bench-pressing the upload limit.", "film"],
+    ["Attachment therapy", "My video and my inbox are working through their size differences.", "file"],
+    ["Director's trim", "The director's cut was mostly megabytes.", "film"],
+    ["Upload cardio", "Watching the upload bar was my least successful endurance sport.", "steps"],
+    ["Storage roommate", "My screen recording used to occupy the entire apartment.", "frame"],
+    ["Send it", "I wanted to share a moment, not fund a data center.", "spark"],
   ]),
   "gif-compressor": collection([
     ["A small paint box", "Each GIF color table holds up to 256 colors. Gradients can make that limit noticeable.", "palette"],
@@ -47,6 +67,11 @@ export const toolInsights: Record<string, ToolInsight[]> = {
   ], [
     ["Loop responsibly", "Same joke. Fewer megabytes. Excellent comedic timing.", "loop"],
     ["GIF gym", "My GIF's fitness plan? Fewer frames, more charm.", "resize"],
+    ["Loop luggage", "My dancing cat has checked fewer bags than I have.", "file"],
+    ["Palette negotiation", "The colors held a meeting. A few agreed to work remotely.", "palette"],
+    ["Tiny tantrum", "The GIF got smaller. The dramatic eye-roll stayed enormous.", "frame"],
+    ["Byte-sized comedy", "My punchline now fits through the attachment door.", "spark"],
+    ["Forever, on a budget", "Infinite replays. Finite storage. Finally, a sensible subscription to chaos.", "loop"],
   ]),
   "image-resizer": collection([
     ["Pixels versus paperwork", "Pixel dimensions and KB are different measurements. A portal can check both independently.", "resize"],
@@ -55,6 +80,11 @@ export const toolInsights: Record<string, ToolInsight[]> = {
   ], [
     ["Portal diplomacy", "My photo and the upload limit are finally on speaking terms.", "file"],
     ["A perfect fit", "Dress for the dimensions you want, not the dimensions you have.", "resize"],
+    ["Passport personality", "My passport photo has strict dimensions and absolutely no sense of humor.", "frame"],
+    ["KB negotiations", "The portal wanted 20 KB. I offered it my entire afternoon instead.", "file"],
+    ["Signature celebrity", "My signature demanded a custom dressing room. Apparently it's 140 by 60 pixels.", "resize"],
+    ["Square ambitions", "I tried thinking outside the box. The upload form asked me to crop back in.", "frame"],
+    ["Size matters here", "My photo was rejected for being too big. Finally, a problem unrelated to my expression.", "spark"],
   ]),
   "image-format-converter": collection([
     ["The invisible background", "PNG and WebP support transparency. Standard JPEG doesn't, so transparent areas need a background.", "palette"],
@@ -63,6 +93,11 @@ export const toolInsights: Record<string, ToolInsight[]> = {
   ], [
     ["Format translator", "Same picture, different passport.", "file"],
     ["Group chat peace", "The designer speaks PNG. The website speaks WebP. I speak both.", "palette"],
+    ["Extension crisis", "My image changed formats and immediately updated its professional bio.", "file"],
+    ["PNG honesty", "PNG is transparent about its background. Some coworkers could learn from that.", "palette"],
+    ["Format reunion", "JPG, PNG and WebP walked into a folder. The website asked for just one.", "file"],
+    ["Fresh paperwork", "Not a new photo. Just a change of digital citizenship.", "frame"],
+    ["Dress-code drama", "The upload form said 'JPG only'. My PNG took it as a fashion challenge.", "spark"],
   ]),
   "pdf-merger": collection([
     ["Portable by name", "PDF stands for Portable Document Format. Its whole thing is keeping a document's layout together.", "file"],
@@ -71,6 +106,11 @@ export const toolInsights: Record<string, ToolInsight[]> = {
   ], [
     ["Attachment reunion", "Five PDFs walk into an inbox. One organized document walks out.", "file"],
     ["Page management", "Not every page needs to attend this meeting.", "steps"],
+    ["Final-final-final", "I merged final.pdf and final-really-final.pdf. The sequel was inevitable.", "file"],
+    ["Paperwork plot twist", "Page seven was the invoice. Page eight was my will to continue.", "steps"],
+    ["Document matchmaking", "These PDFs have more chemistry now that they're in the same file.", "spark"],
+    ["Attachment minimalism", "One attachment: organized. Twelve attachments: a treasure hunt with no prize.", "file"],
+    ["Page escape", "I split out the one page I needed. The other  ninety-nine are enjoying their privacy.", "frame"],
   ]),
   "favicon-generator": collection([
     ["Small stage, big role", "Favicons help identify a site in browser tabs and bookmarks. Tiny doesn't mean unemployed.", "frame"],
@@ -79,6 +119,11 @@ export const toolInsights: Record<string, ToolInsight[]> = {
   ], [
     ["Tab celebrity", "Sixteen pixels of pure main-character energy.", "spark"],
     ["Find me", "In a browser full of tabs, be the one wearing a recognizable hat.", "frame"],
+    ["Tiny résumé", "My favicon's résumé says 'small, recognizable, excellent at sitting in corners'.", "file"],
+    ["Tab hoarder", "I have forty tabs open. The tiny logo is doing all the navigation work.", "frame"],
+    ["Pixel celebrity", "My logo downsized and somehow became more famous.", "resize"],
+    ["Globe retirement", "The default globe finally handed in its resignation.", "spark"],
+    ["Small-office energy", "Sixteen pixels. Still enough room for brand confidence.", "palette"],
   ]),
   "video-aspect-ratio": collection([
     ["Same ratio, different size", "16:9 describes a proportion, not a resolution. Many different pixel dimensions can share that shape.", "resize"],
@@ -87,6 +132,11 @@ export const toolInsights: Record<string, ToolInsight[]> = {
   ], [
     ["Screen wardrobe", "One video. Three outfits. No reshoot.", "frame"],
     ["Stay in the picture", "Vertical ambition. Horizontal origins.", "resize"],
+    ["Portrait promotion", "My landscape video got a vertical job and needed a new wardrobe.", "frame"],
+    ["Edge anxiety", "The crop tool and my elbows are not currently on speaking terms.", "resize"],
+    ["Padding fan club", "Black bars: the quiet roommates who let the whole picture stay.", "frame"],
+    ["Square peg", "My widescreen epic is auditioning for a square feed. Range matters.", "film"],
+    ["Phone-first problems", "I filmed for the cinema. Everyone watched while waiting for the bus.", "spark"],
   ]),
   "video-summarizer": collection([
     ["Words aren't the whole show", "A transcript-based summary can't see a chart or a silent demonstration unless the text describes it.", "film"],
@@ -95,6 +145,11 @@ export const toolInsights: Record<string, ToolInsight[]> = {
   ], [
     ["Coffee-length edition", "All the key points, before the coffee becomes iced coffee.", "spark"],
     ["The highlight reel", "I came for the insight, not the twenty-minute introduction.", "film"],
+    ["Webinar survival", "The speaker said 'briefly'. The progress bar filed a complaint.", "steps"],
+    ["Meeting souvenir", "I watched an hour of video and all I wanted was three useful bullets.", "text"],
+    ["Speed-reader energy", "My summary has already finished while my video is still saying hello.", "spark"],
+    ["Plot extraction", "Keep the big idea. The microphone checks can stay in the original.", "voice"],
+    ["Calendar rescue", "This summary and my lunch break have formed a strategic alliance.", "file"],
   ]),
   "subtitle-generator": collection([
     ["Two jobs, one screen", "Subtitles often represent dialogue; accessibility captions can also describe sounds and speaker changes.", "voice"],
@@ -103,6 +158,11 @@ export const toolInsights: Record<string, ToolInsight[]> = {
   ], [
     ["Silent-mode solidarity", "For everyone watching beside a sleeping baby: you're welcome.", "voice"],
     ["Words with stage presence", "Let the dialogue show up, even when the speakers don't.", "text"],
+    ["Snack acoustics", "I need subtitles because my crisps are louder than the plot.", "voice"],
+    ["Whisper insurance", "The actor whispered the crucial clue. My subtitles weren't born yesterday.", "text"],
+    ["Public transport cinema", "An entire drama watched silently between two bus stops.", "film"],
+    ["Name check", "The captions called me 'Say Yum'. Honestly, not my worst nickname.", "spark"],
+    ["Timing matters", "A punchline arriving three seconds early is technically a spoiler.", "steps"],
   ]),
   "youtube-title-generator": collection([
     ["A title makes a promise", "A title sets expectations. If the video doesn't deliver, a clever headline won't fix the mismatch.", "text"],
@@ -111,6 +171,11 @@ export const toolInsights: Record<string, ToolInsight[]> = {
   ], [
     ["The first impression", "My video spent ten hours getting dressed. Its title deserves five minutes.", "film"],
     ["Curiosity, not confusion", "Make them curious, not concerned about your caps-lock key.", "text"],
+    ["Title negotiations", "I made seventeen title drafts. The video is about choosing a pen.", "text"],
+    ["Caps-lock vacation", "My headline shouted so loudly the thumbnail asked for earplugs.", "voice"],
+    ["Description confession", "'Links below' is doing a suspicious amount of work in my description.", "steps"],
+    ["Hook fishing", "I went fishing for a hook and came back with eight titles.", "spark"],
+    ["Honest intrigue", "You won't believe what happened next: I chose a title that actually describes the video.", "film"],
   ]),
   "content-repurposer": collection([
     ["Adapt, don't photocopy", "Different channels have different contexts and formats. Repurposing reshapes an idea, not just its line breaks.", "frame"],
@@ -119,6 +184,11 @@ export const toolInsights: Record<string, ToolInsight[]> = {
   ], [
     ["An idea with plans", "One good idea shouldn't retire after a single post.", "loop"],
     ["Content outfit change", "Same brainwave. Different dress code.", "spark"],
+    ["Idea overtime", "My blog post clocked out. Its LinkedIn version picked up the next shift.", "loop"],
+    ["Platform costume party", "The newsletter wears a blazer. The caption brought sunglasses.", "frame"],
+    ["Draft multiplication", "I wrote one article and somehow adopted a whole family of posts.", "file"],
+    ["No copy-paste twins", "Same idea, different personality. Please stop dressing all the posts alike.", "text"],
+    ["Evergreen energy", "This idea has been reused more often than my favorite coffee mug.", "spark"],
   ]),
   "product-description-generator": collection([
     ["Feature meets benefit", "A feature says what a product has; a benefit explains why that matters to the buyer.", "shop"],
@@ -127,6 +197,11 @@ export const toolInsights: Record<string, ToolInsight[]> = {
   ], [
     ["The listing glow-up", "Your product deserves more than 'nice item, buy now'.", "shop"],
     ["Useful enthusiasm", "Less adjective confetti. More reasons to care.", "spark"],
+    ["Adjective audit", "This mug is premium, stunning and revolutionary. Also, it holds tea.", "shop"],
+    ["Listing honesty", "I asked for product benefits, not a fictional origin story involving dragons.", "text"],
+    ["Bullet-point makeover", "My feature list stopped mumbling and put on its sales shoes.", "steps"],
+    ["Cart conversation", "The shopper asked 'why this one?' My old description replied 'blue'.", "shop"],
+    ["Specification romance", "Nothing says commitment like including the actual dimensions.", "resize"],
   ]),
   "screenshot-to-guide": collection([
     ["A picture misses the click", "A screenshot shows a state, not every action that led to it. Short notes help fill the gaps.", "frame"],
@@ -135,6 +210,11 @@ export const toolInsights: Record<string, ToolInsight[]> = {
   ], [
     ["Explain once", "Future me would like to thank present me for documenting this.", "steps"],
     ["Support déjà vu", "If I've explained it three times, it deserves its own guide.", "text"],
+    ["Red-arrow energy", "I added one arrow and suddenly became the office's most patient teacher.", "steps"],
+    ["Click archaeology", "These screenshots are the fossil record of how I found the settings menu.", "frame"],
+    ["Future-me hotline", "Past me left a guide. For once, past me was helpful.", "file"],
+    ["Step-one suspense", "The guide began with step four. A bold choice for a mystery novel.", "steps"],
+    ["Explainer retirement", "I replaced 'let me show you again' with a document and regained my afternoon.", "spark"],
   ]),
   "voiceover-generator": collection([
     ["Punctuation has a voice", "Commas and full stops help shape synthetic speech rhythm. Your script has a built-in conductor.", "text"],
@@ -143,6 +223,11 @@ export const toolInsights: Record<string, ToolInsight[]> = {
   ], [
     ["Studio optional", "My recording booth is a text box, and the neighbors approve.", "voice"],
     ["Mic check", "Great narration. Zero arguments with the ceiling fan.", "film"],
+    ["Recording gremlins", "Every time I pressed record, the neighbor discovered a new power tool.", "voice"],
+    ["One-take confidence", "My script has a studio voice. I still trip over 'particularly'.", "text"],
+    ["Comma conductor", "I added a comma and the narrator finally took a breath.", "voice"],
+    ["Closet studio", "My recording booth used to contain winter coats. Now it's a text box.", "frame"],
+    ["Professional pajamas", "The narration sounds boardroom-ready. The producer is wearing slippers.", "spark"],
   ]),
   "demo-script-generator": collection([
     ["Show the outcome", "A demo script can connect a problem to an action and a result, rather than touring every menu.", "steps"],
@@ -151,5 +236,10 @@ export const toolInsights: Record<string, ToolInsight[]> = {
   ], [
     ["Plot over button tour", "The hero of your demo is the customer's win, not the settings menu.", "film"],
     ["A better ending", "Less 'and here's another feature'. More 'here's what you can do now'.", "spark"],
+    ["Menu-tour survivor", "The demo visited every setting. The customer just wanted to send an invoice.", "steps"],
+    ["Plot rescue", "Our demo had twelve features and no plot. Even the loading spinner wanted closure.", "film"],
+    ["Rehearsal reality", "It sounded short in my head. Then I read it out loud and missed lunch.", "voice"],
+    ["Click choreography", "A good demo script tells my cursor where to go before it panics.", "frame"],
+    ["The grand finale", "The call to action should not be 'anyway, that's most of the buttons'.", "text"],
   ]),
 };
