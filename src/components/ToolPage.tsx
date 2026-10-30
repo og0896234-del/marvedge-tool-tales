@@ -3,6 +3,7 @@ import { ArrowUpRight, Lock } from "lucide-react";
 import { getTool, MARVEDGE_URL, type Tool } from "@/lib/tools";
 import { ToolAnimation } from "./ToolAnimation";
 import { ToolWorkspace } from "./tools/registry";
+import { ToolInsights } from "./ToolInsights";
 
 export function ToolPage({ tool }: { tool: Tool }) {
   return (
@@ -26,7 +27,9 @@ export function ToolPage({ tool }: { tool: Tool }) {
         <ToolWorkspace slug={tool.slug} />
       </section>
 
-      <section className="mx-auto max-w-7xl px-5 pb-16">
+      <ToolInsights tool={tool} />
+
+      <section className="mx-auto max-w-7xl px-5 pb-16 pt-10">
         <div className="relative flex flex-col items-start justify-between gap-6 overflow-hidden rounded-[2rem] bg-band p-8 text-primary-foreground shadow-elegant md:flex-row md:items-center md:p-10">
           <div>
             <p className="text-xs font-bold uppercase tracking-widest opacity-80">{tool.story[2]}</p>

@@ -11,6 +11,8 @@ export const Route = createFileRoute("/")({
       { name: "description", content: "Free browser tools and AI helpers for creators and SaaS teams: MP4 to GIF, compressors, QR codes, subtitles, demo scripts and more." },
       { property: "og:title", content: "Marvedge Tools — 18 free video, image & AI tools" },
       { property: "og:description", content: "Free browser utilities and AI tools for creators, marketers and SaaS teams." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
     ],
   }),
   component: Index,
