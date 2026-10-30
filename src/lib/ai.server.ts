@@ -63,7 +63,7 @@ export async function speak(text: string, voice: string) {
     headers: { Authorization: `Bearer ${apiKey}`, "Content-Type": "application/json", "X-Lovable-AIG-SDK": "fetch" },
     body: JSON.stringify({
       model: TTS_MODEL,
-      contents: [{ parts: [{ text }] }],
+      contents: [{ role: "user", parts: [{ text }] }],
       generationConfig: {
         responseModalities: ["AUDIO"],
         speechConfig: { voiceConfig: { prebuiltVoiceConfig: { voiceName: voice } } },

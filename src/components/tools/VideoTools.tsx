@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
-import { GIFEncoder, quantize, applyPalette } from "gifenc";
+import gifenc from "gifenc";
+const { GIFEncoder, quantize, applyPalette } = gifenc;
 import { parseGIF, decompressFrames } from "gifuct-js";
 import { Btn, Dropzone, DownloadBtn, ErrorNote, Field, Panel, baseName, download, fmtBytes, inputCls, rangeCls } from "./ui";
 
