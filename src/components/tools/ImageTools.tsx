@@ -4,6 +4,7 @@ import JSZip from "jszip";
 import { PDFDocument, StandardFonts, rgb } from "pdf-lib";
 import { AlertTriangle, ArrowDown, ArrowUp, Check, Loader2, X } from "lucide-react";
 import { loadSample } from "@/lib/samples";
+import { fitToTarget } from "@/lib/fit-size";
 import { Btn, Dropzone, DownloadBtn, ErrorNote, Field, Panel, baseName, canvasBlob, download, extFor, fmtBytes, inputCls, loadImage, rangeCls } from "./ui";
 
 type Out = { name: string; before: number; blob: Blob; url: string };
@@ -156,23 +157,15 @@ export function ImageResizer() {
     const base = draw(); if (!base) return null;
     const mk = (blob: Blob, q: number, scale: number, hits: boolean) => ({ blob, url: URL.createObjectURL(blob), q, scale, hits });
     if (!target) return mk(await canvasBlob(base, "image/jpeg", 0.92), 0.92, 1, true);
-    let closest: { blob: Blob; q: number; scale: number } | null = null;
-    for (let scale = 1; scale >= 0.3; scale = Math.round((scale - 0.12) * 100) / 100) {
-      const c = scale === 1 ? base : draw(scale)!;
-      const low = await canvasBlob(c, "image/jpeg", 0.05);
-      if (!closest || low.size < closest.blob.size) closest = { blob: low, q: 0.05, scale };
-      if (low.size <= target) {
-        let lo = 0.05, hi = 0.95, best = low;
-        for (let i = 0; i < 7; i++) {
-          const mid = (lo + hi) / 2;
-          const b = await canvasBlob(c, "image/jpeg", mid);
-          if (b.size <= target) { best = b; lo = mid; } else hi = mid;
-        }
-        return mk(best, Math.round(lo * 100) / 100, scale, true);
-      }
-    }
-    const c = closest!;
-    return mk(c.blob, c.q, c.scale, false);
+    const cache = new Map<string, Blob>();
+    const encode = async (q: number, scale: number) => {
+      const key = `${q}|${scale}`;
+      let blob = cache.get(key);
+      if (!blob) { blob = await canvasBlob(scale === 1 ? base : draw(scale)!, "image/jpeg", q); cache.set(key, blob); }
+      return { size: blob.size, blob };
+    };
+    const fit = await fitToTarget(encode, target);
+    return mk((await encode(fit.q, fit.scale)).blob, fit.q, fit.scale, fit.hits);
   };
 
   useEffect(() => {
@@ -215,6 +208,7 @@ export function ImageResizer() {
                   <p className="mt-1 text-muted-foreground">
                     Quality {Math.round(out.q * 100)}%
                     {out.scale < 1 ? ` · output ${Math.round(w * out.scale)}×${Math.round(h * out.scale)} px to fit the target` : target ? " · full size kept" : ""}
+                    {out.q < 0.25 ? " · it will look soft — a looser target stays sharper" : ""}
                     {target && !out.hits ? " · try a smaller width/height or a looser target" : ""}
                   </p>
                 </>
