@@ -359,7 +359,8 @@ const QR_FRAMES: { id: QrFrame; label: string }[] = [
 ];
 
 function FrameThumb({ id, fg }: { id: QrFrame; fg: string }) {
-  const qr = <g fill={fg} opacity={0.85}>{[[2, 2], [5, 2], [8, 2], [2, 5], [5, 5], [8, 5], [2, 8], [5, 8], [8, 8], [5, 11], [8, 11]].map(([x, y], i) => <rect key={i} x={x * 2.4} y={y * 2.4} width={2} height={2} rx={0.5} />)}</g>;
+  const dots: [number, number][] = [[2, 2], [5, 2], [8, 2], [2, 5], [5, 5], [8, 5], [2, 8], [5, 8], [8, 8], [5, 11], [8, 11]];
+  const qr = <g fill={fg} opacity={0.85}>{dots.map(([x, y], i) => <rect key={i} x={x * 2.4} y={y * 2.4} width={2} height={2} rx={0.5} />)}</g>;
   return (
     <svg viewBox="0 0 28 34" className="h-14 w-full" aria-hidden>
       {id === "none" && <g><circle cx="14" cy="15" r="9" fill="none" stroke="currentColor" strokeWidth="2" className="text-muted-foreground" /><line x1="7" y1="22" x2="21" y2="8" stroke="currentColor" strokeWidth="2" className="text-muted-foreground" /></g>}
@@ -554,7 +555,7 @@ export function QrGenerator() {
           </div>
           <div className="flex flex-wrap justify-center gap-2">
             <DownloadBtn onClick={downloadPng}>PNG</DownloadBtn>
-            <Btn variant="ghost" onClick={plainSvg ? downloadSvg : undefined} disabled={!plainSvg}>SVG</Btn>
+            <Btn variant="ghost" onClick={() => { if (plainSvg) void downloadSvg(); }} disabled={!plainSvg}>SVG</Btn>
           </div>
           {!plainSvg && <p className="text-center text-xs text-muted-foreground">SVG export is available for the classic square style without a frame or logo.</p>}
           <p className="text-center text-xs text-muted-foreground">Updates live as you type — scan it with your phone to test.</p>
