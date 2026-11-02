@@ -23,7 +23,7 @@ export function LinkShortener() {
 
   const go = async () => {
     setErr(null); setOut(null);
-    const h = EXPIRY[exp].h;
+    const h = EXPIRY[exp]?.h ?? 0;
     let expiresAt: string | undefined;
     if (h > 0) expiresAt = new Date(Date.now() + h * 3600e3).toISOString();
     if (h === -1) {
@@ -62,7 +62,7 @@ export function LinkShortener() {
             {EXPIRY.map((x, i) => <option key={x.label} value={i}>{x.label}</option>)}
           </select>
         </Field>
-        {EXPIRY[exp].h === -1 && <Field label="Expires on"><input type="datetime-local" className={inputCls} value={custom} onChange={(e) => setCustom(e.target.value)} /></Field>}
+        {EXPIRY[exp]?.h === -1 && <Field label="Expires on"><input type="datetime-local" className={inputCls} value={custom} onChange={(e) => setCustom(e.target.value)} /></Field>}
       </div>
       <div className="mt-5"><Btn onClick={go} busy={busy} disabled={!url}>Shorten link</Btn></div>
       <ErrorNote msg={err} />
