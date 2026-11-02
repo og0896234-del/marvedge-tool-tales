@@ -368,7 +368,16 @@ export function QrGenerator() {
               </div>
             </div>
             <div className="grid gap-3 sm:grid-cols-2">
-              <Field label="Background"><input type="color" value={bg} onChange={(e) => setBg(e.target.value)} className="h-11 w-full cursor-pointer rounded-xl border" /></Field>
+              <Field label="Background">
+                <div className="flex items-center gap-2">
+                  {["#FFFDFE", "#ffffff", "#f5f3ff", "#111111"].map((c) => (
+                    <button key={c} aria-label={`Background ${c}`} onClick={() => setBg(c)}
+                      className={`h-9 w-9 rounded-full border-2 transition ${bg === c ? "scale-110 border-primary ring-2 ring-ring/40" : "border-border hover:scale-105"}`}
+                      style={{ background: c }} />
+                  ))}
+                  <input type="color" value={bg} onChange={(e) => setBg(e.target.value)} aria-label="Custom background color" className="h-9 w-12 cursor-pointer rounded-lg border" />
+                </div>
+              </Field>
               <Field label={`Size · ${size}px`}><input type="range" min={128} max={1024} step={32} value={size} onChange={(e) => setSize(+e.target.value)} className={rangeCls} /></Field>
             </div>
             <div className="grid gap-3">
