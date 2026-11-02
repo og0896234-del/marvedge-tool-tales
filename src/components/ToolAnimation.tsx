@@ -306,3 +306,80 @@ function ResizeAnything() {
     </div>
   );
 }
+
+/** Four stick-figure poses, drawn as one SVG each so the loop can step frame by frame. */
+const gifPose = (arms: string, legs: string) => (
+  <svg viewBox="0 0 64 80" className="h-full w-full" aria-hidden>
+    <circle cx="32" cy="15" r="9" className="fill-primary" />
+    <path d="M32 24 L32 50" className="stroke-primary" strokeWidth="5" strokeLinecap="round" />
+    <path d={arms} className="fill-none stroke-primary" strokeWidth="4" strokeLinecap="round" />
+    <path d={legs} className="fill-none stroke-primary" strokeWidth="5" strokeLinecap="round" />
+  </svg>
+);
+
+const GIF_POSES = [
+  gifPose("M32 31 L18 19 M32 31 L46 19", "M32 50 L21 70 M32 50 L43 70"),
+  gifPose("M32 31 L15 31 M32 31 L49 31", "M32 50 L27 71 M32 50 L37 71"),
+  gifPose("M32 31 L20 44 M32 31 L44 44", "M32 50 L20 66 M32 50 L44 66"),
+  gifPose("M32 31 L16 23 M32 31 L48 23", "M32 50 L24 62 M32 50 L40 62"),
+];
+
+/** A stat pill whose value slides from the "before" number to the "after" number. */
+function GifStat({ from, to, hero }: { from: string; to: string; hero?: boolean }) {
+  return (
+    <span
+      className={`grid place-items-center rounded-full px-3 py-1 font-display text-xs font-bold shadow-soft ${
+        hero ? "bg-gradient-primary text-primary-foreground" : "border bg-card text-muted-foreground"
+      }`}
+    >
+      <span className="col-start-1 row-start-1 whitespace-nowrap" style={a("gc-val-out 9s linear infinite")}>{from}</span>
+      <span className="col-start-1 row-start-1 whitespace-nowrap opacity-0" style={a("gc-val-in 9s linear infinite")}>{to}</span>
+    </span>
+  );
+}
+
+/** A looping character: four frames, then a sweep drops it to two and the file shrinks. */
+function GifSqueeze() {
+  const loop = (poses: ReactNode[], steps: number, cls: string, anim: string) => (
+    <div className={`absolute inset-x-0 bottom-0 flex justify-center ${cls}`} style={a(anim)}>
+      <div className="h-24 w-16 overflow-hidden">
+        <div className="flex w-max" style={a(`gc-step${steps} 1.5s steps(${steps}) infinite`)}>
+          {poses.map((p, i) => <div key={i} className="h-24 w-16 shrink-0">{p}</div>)}
+        </div>
+      </div>
+    </div>
+  );
+
+  return (
+    <div className="gc-stage flex flex-col items-center gap-4">
+      <div className="relative h-32 w-56 overflow-hidden rounded-2xl border bg-card shadow-soft">
+        {loop(GIF_POSES, 4, "opacity-100", "gc-rich 9s linear infinite")}
+        {loop([GIF_POSES[0], GIF_POSES[2]], 2, "opacity-0", "gc-thin 9s linear infinite")}
+        <div className="absolute bottom-3 left-1/2 h-1 w-24 -translate-x-1/2 rounded-full bg-lavender" />
+        <div className="absolute inset-y-0 left-0 w-12 bg-gradient-to-r from-transparent via-primary/30 to-transparent opacity-0" style={a("gc-scan 9s ease-in-out infinite")} />
+        <span className="absolute left-3 top-3 rounded-full bg-background px-2 py-0.5 text-[11px] font-bold text-primary shadow-soft">GIF ∞</span>
+        <span className="absolute right-3 top-3 rounded-md border-2 border-primary bg-background px-1.5 py-0.5 font-display text-[11px] font-extrabold text-primary opacity-0" style={a("gc-stamp 9s ease-out infinite")}>−81%</span>
+      </div>
+
+      <div className="flex items-center gap-1.5">
+        {Array.from({ length: 8 }).map((_, i) => (
+          <div key={i} className="relative h-10 w-8 overflow-hidden rounded border bg-card"
+            style={a(`${i % 2 ? "gc-frame-out" : "gc-frame-keep"} 9s ease-in-out ${i * 0.05}s infinite`)}>
+            <div className="flex h-full items-center justify-center">
+              <div className={`h-5 w-5 rounded-sm ${i % 2 ? "bg-lavender" : "bg-gradient-primary"}`} />
+            </div>
+            {i % 2 ? (
+              <span className="absolute inset-0 grid place-items-center font-display text-sm font-extrabold text-destructive opacity-0" style={a("gc-val-in 9s linear infinite")}>×</span>
+            ) : null}
+          </div>
+        ))}
+      </div>
+
+      <div className="flex flex-wrap items-center justify-center gap-2">
+        <GifStat from="24 fps" to="10 fps" />
+        <GifStat from="256 colours" to="32 colours" />
+        <GifStat from="4.8 MB" to="0.9 MB" hero />
+      </div>
+    </div>
+  );
+}
