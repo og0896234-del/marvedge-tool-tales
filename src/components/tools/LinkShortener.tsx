@@ -47,7 +47,7 @@ export function LinkShortener() {
     setErr(null); setOut(null);
     let expiresAt: string | undefined;
     if (on.expiry) {
-      const h = EXPIRY[exp].h;
+      const h = EXPIRY[exp]?.h ?? 0;
       if (h > 0) expiresAt = new Date(Date.now() + h * 3600e3).toISOString();
       else {
         if (!custom) return setErr("Pick an expiry date.");
@@ -116,7 +116,7 @@ export function LinkShortener() {
               <select className={`mt-1 ${field}`} value={exp} onChange={(e) => setExp(+e.target.value)}>
                 {EXPIRY.map((x, i) => <option key={x.label} value={i} className="text-foreground">{x.label}</option>)}
               </select>
-              {EXPIRY[exp].h === -1 && <input type="datetime-local" className={`mt-2 ${field}`} value={custom} onChange={(e) => setCustom(e.target.value)} />}
+              {EXPIRY[exp]?.h === -1 && <input type="datetime-local" className={`mt-2 ${field}`} value={custom} onChange={(e) => setCustom(e.target.value)} />}
             </label>
           )}
         </div>
