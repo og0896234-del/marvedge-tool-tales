@@ -15,8 +15,8 @@ const TARGETS = {
   india: { ids: ["356"], bbox: [68, 6, 98, 37] },
   usa: { ids: ["840", "124"], bbox: [-141, 24, -52, 72] },
   oceania: { ids: ["036", "554"], bbox: [112, -48, 179, -10] },
-  latam: { ids: ["076", "484"], bbox: [-118, -34, -34, 33] },
-  africa: { ids: ["710", "818"], bbox: [16, -35, 37, 32] },
+  latam: { ids: ["076"], bbox: [-75, -34, -34, 6] },
+  africa: { ids: ["710", "516", "072", "426", "748"], bbox: [16, -35, 33, -22] },
   // UK + the Schengen states our presets actually cover.
   europe: { ids: ["826", "250", "276", "724", "380", "528", "056", "040", "756", "620", "372"], bbox: [-11, 36, 25, 62] },
   mideast: { ids: ["682", "784", "634", "512", "414"], bbox: [34, 12, 62, 43] }, // Saudi, UAE, Qatar, Oman, Kuwait

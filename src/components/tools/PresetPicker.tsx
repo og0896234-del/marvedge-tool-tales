@@ -52,7 +52,7 @@ export function PresetPicker({
         <p className="text-xs text-muted-foreground">Common official sizes; always confirm on the portal you upload to.</p>
       </div>
 
-      <div role="group" aria-label="Country or category" className="grid grid-cols-2 gap-2 sm:grid-cols-4 md:grid-cols-5 xl:grid-cols-6">
+      <div role="group" aria-label="Country or category" className="grid grid-cols-2 gap-2 sm:grid-cols-4 md:grid-cols-4 xl:grid-cols-6">
         {PRESET_GROUPS.map((g) => {
           const on = g.id === groupId;
           const count = g.categories.reduce((n, c) => n + c.items.length, 0);
