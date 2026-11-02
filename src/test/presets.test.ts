@@ -47,6 +47,6 @@ describe("resizer preset cards", () => {
       expect(p.h).toBeGreaterThan(0);
       if (p.kb != null) expect(p.kb).toBeGreaterThan(0);
     }
-    expect(allPresets()).toHaveLength(85);
+    expect(allPresets()).toHaveLength(80);
   });
 });
