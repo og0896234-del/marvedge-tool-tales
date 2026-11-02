@@ -279,6 +279,97 @@ function StepHead({ n, title }: { n: number; title: string }) {
   );
 }
 
+type QrShape = "square" | "rounded" | "dots";
+type QrFrame = "none" | "border" | "banner" | "badge";
+type QrDesignTab = "frame" | "shape" | "logo" | "level";
+
+function rr(ctx: CanvasRenderingContext2D, x: number, y: number, w: number, h: number, r: number) {
+  ctx.beginPath(); ctx.roundRect(x, y, w, h, Math.max(0, Math.min(r, w / 2, h / 2)));
+}
+
+function drawQr(canvas: HTMLCanvasElement, value: string, o: { fg: string; bg: string; size: number; level: "L" | "M" | "Q" | "H"; shape: QrShape; frame: QrFrame; logo: HTMLImageElement | null }) {
+  const qr = QRCode.create(value, { errorCorrectionLevel: o.logo ? "H" : o.level });
+  const n = qr.modules.size;
+  const data = qr.modules.data;
+  const dpr = 2;
+  const pad = o.frame === "none" ? Math.round(o.size * 0.04) : Math.round(o.size * 0.09);
+  const bannerH = o.frame === "banner" ? Math.round(o.size * 0.18) : 0;
+  const W = o.size + pad * 2;
+  const H = o.size + pad * 2 + bannerH;
+  canvas.width = W * dpr; canvas.height = H * dpr;
+  canvas.style.aspectRatio = `${W} / ${H}`;
+  const ctx = canvas.getContext("2d")!;
+  ctx.scale(dpr, dpr);
+  ctx.fillStyle = o.bg;
+  if (o.frame === "none") ctx.fillRect(0, 0, W, H);
+  else { rr(ctx, 0, 0, W, H, Math.round(o.size * 0.06)); ctx.fill(); }
+  if (o.frame === "border") {
+    ctx.strokeStyle = o.fg; ctx.lineWidth = Math.max(3, o.size * 0.012);
+    rr(ctx, ctx.lineWidth, ctx.lineWidth, W - ctx.lineWidth * 2, H - ctx.lineWidth * 2, Math.round(o.size * 0.05)); ctx.stroke();
+  }
+  if (o.frame === "badge") {
+    ctx.strokeStyle = o.fg; ctx.lineWidth = Math.max(4, o.size * 0.016);
+    ctx.beginPath(); ctx.arc(W / 2, H / 2, Math.min(W, H) / 2 - ctx.lineWidth, 0, 7); ctx.stroke();
+  }
+  const ox = pad, oy = pad, cell = o.size / n;
+  const isFinder = (r: number, c: number) => (r < 7 && c < 7) || (r < 7 && c >= n - 7) || (r >= n - 7 && c < 7);
+  ctx.fillStyle = o.fg;
+  for (let r = 0; r < n; r++) for (let c = 0; c < n; c++) {
+    if (!data[r * n + c] || isFinder(r, c)) continue;
+    const x = ox + c * cell, y = oy + r * cell;
+    if (o.shape === "dots") { ctx.beginPath(); ctx.arc(x + cell / 2, y + cell / 2, cell * 0.42, 0, 7); ctx.fill(); }
+    else if (o.shape === "rounded") { rr(ctx, x + cell * 0.08, y + cell * 0.08, cell * 0.84, cell * 0.84, cell * 0.38); ctx.fill(); }
+    else ctx.fillRect(x, y, cell + 0.5, cell + 0.5);
+  }
+  const fr = o.shape === "square" ? 0 : cell * 1.2;
+  const finder = (r0: number, c0: number) => {
+    const x = ox + c0 * cell, y = oy + r0 * cell, s = cell * 7;
+    ctx.fillStyle = o.fg; rr(ctx, x, y, s, s, fr); ctx.fill();
+    ctx.fillStyle = o.bg; rr(ctx, x + cell, y + cell, s - cell * 2, s - cell * 2, fr * 0.7); ctx.fill();
+    ctx.fillStyle = o.fg; rr(ctx, x + cell * 2, y + cell * 2, s - cell * 4, s - cell * 4, fr * 0.5); ctx.fill();
+  };
+  finder(0, 0); finder(0, n - 7); finder(n - 7, 0);
+  if (o.logo) {
+    const ls = o.size * 0.22, lx = ox + (o.size - ls) / 2, ly = oy + (o.size - ls) / 2, lp = ls * 0.14;
+    ctx.fillStyle = o.bg; rr(ctx, lx - lp, ly - lp, ls + lp * 2, ls + lp * 2, ls * 0.25); ctx.fill();
+    const img = o.logo, ir = img.naturalWidth / img.naturalHeight;
+    let dw = ls, dh = ls; if (ir > 1) dh = ls / ir; else dw = ls * ir;
+    ctx.drawImage(img, lx + (ls - dw) / 2, ly + (ls - dh) / 2, dw, dh);
+  }
+  if (o.frame === "banner") {
+    ctx.fillStyle = o.fg;
+    rr(ctx, pad * 0.4, H - bannerH - pad * 0.4, W - pad * 0.8, bannerH, bannerH * 0.3); ctx.fill();
+    ctx.fillStyle = o.bg;
+    ctx.font = `800 ${Math.round(bannerH * 0.42)}px "Plus Jakarta Sans", sans-serif`;
+    ctx.textAlign = "center"; ctx.textBaseline = "middle";
+    ctx.fillText("SCAN ME", W / 2, H - bannerH / 2 - pad * 0.4 + 1);
+  }
+}
+
+const QR_SHAPES: { id: QrShape; label: string; hint: string }[] = [
+  { id: "square", label: "Classic", hint: "Sharp square modules" },
+  { id: "rounded", label: "Rounded", hint: "Soft corners" },
+  { id: "dots", label: "Dots", hint: "Playful circles" },
+];
+const QR_FRAMES: { id: QrFrame; label: string }[] = [
+  { id: "none", label: "No frame" },
+  { id: "border", label: "Border" },
+  { id: "banner", label: "Scan-me banner" },
+  { id: "badge", label: "Badge ring" },
+];
+
+function FrameThumb({ id, fg }: { id: QrFrame; fg: string }) {
+  const qr = <g fill={fg} opacity={0.85}>{[[2, 2], [5, 2], [8, 2], [2, 5], [5, 5], [8, 5], [2, 8], [5, 8], [8, 8], [5, 11], [8, 11]].map(([x, y], i) => <rect key={i} x={x * 2.4} y={y * 2.4} width={2} height={2} rx={0.5} />)}</g>;
+  return (
+    <svg viewBox="0 0 28 34" className="h-14 w-full" aria-hidden>
+      {id === "none" && <g><circle cx="14" cy="15" r="9" fill="none" stroke="currentColor" strokeWidth="2" className="text-muted-foreground" /><line x1="7" y1="22" x2="21" y2="8" stroke="currentColor" strokeWidth="2" className="text-muted-foreground" /></g>}
+      {id === "border" && <g><rect x="4" y="4" width="20" height="26" rx="4" fill="none" stroke={fg} strokeWidth="2" /><g transform="translate(4.5 7)">{qr}</g></g>}
+      {id === "banner" && <g><rect x="4" y="3" width="20" height="28" rx="4" fill="none" stroke="currentColor" strokeWidth="1.4" className="text-border" /><g transform="translate(4.5 6)">{qr}</g><rect x="6" y="25" width="16" height="4.5" rx="2.2" fill={fg} /></g>}
+      {id === "badge" && <g><circle cx="14" cy="17" r="12.5" fill="none" stroke={fg} strokeWidth="2" /><g transform="translate(4.5 9)">{qr}</g></g>}
+    </svg>
+  );
+}
+
 export function QrGenerator() {
   const [type, setType] = useState<QrType>("url");
   const [text, setText] = useState("https://marvedge.com/");
@@ -289,7 +380,12 @@ export function QrGenerator() {
   const [fg, setFg] = useState("#4C0585"); const [bg, setBg] = useState("#FFFDFE");
   const [size, setSize] = useState(512);
   const [level, setLevel] = useState<"L" | "M" | "Q" | "H">("M");
-  const [png, setPng] = useState("");
+  const [designTab, setDesignTab] = useState<QrDesignTab>("frame");
+  const [frame, setFrame] = useState<QrFrame>("none");
+  const [shape, setShape] = useState<QrShape>("square");
+  const [logo, setLogo] = useState<HTMLImageElement | null>(null);
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const logoInputRef = useRef<HTMLInputElement>(null);
 
   const value =
     type === "wifi" ? `WIFI:T:${enc};S:${ssid};P:${pass};;`
@@ -297,8 +393,16 @@ export function QrGenerator() {
     : type === "phone" ? `tel:${phone.replace(/[^+\d]/g, "")}`
     : type === "vcard" ? ["BEGIN:VCARD", "VERSION:3.0", `FN:${vName}`, vOrg && `ORG:${vOrg}`, vTel && `TEL:${vTel}`, vMail && `EMAIL:${vMail}`, vUrl && `URL:${vUrl}`, "END:VCARD"].filter(Boolean).join("\n")
     : text;
-  const opts = { width: size, margin: 2, color: { dark: fg, light: bg }, errorCorrectionLevel: level };
-  useEffect(() => { if (value.trim()) QRCode.toDataURL(value, opts).then(setPng).catch(() => setPng("")); }, [value, fg, bg, size, level]); // eslint-disable-line react-hooks/exhaustive-deps
+  const plainSvg = shape === "square" && frame === "none" && !logo;
+
+  useEffect(() => {
+    const c = canvasRef.current;
+    if (!c || !value.trim()) return;
+    try { drawQr(c, value, { fg, bg, size, level, shape, frame, logo }); } catch { /* invalid content — keep last frame */ }
+  }, [value, fg, bg, size, level, shape, frame, logo]);
+
+  const downloadPng = () => { const c = canvasRef.current; if (c) download(c.toDataURL("image/png"), "qr-code.png"); };
+  const downloadSvg = async () => download(new Blob([await QRCode.toString(value, { width: size, margin: 2, color: { dark: fg, light: bg }, errorCorrectionLevel: level, type: "svg" })], { type: "image/svg+xml" }), "qr-code.svg");
 
   return (
     <Panel>
@@ -356,42 +460,89 @@ export function QrGenerator() {
           {/* step 2: design */}
           <div className="grid gap-4">
             <StepHead n={2} title="Design your QR" />
-            <div className="grid gap-3">
-              <span className="text-sm font-semibold">Code color</span>
-              <div className="flex flex-wrap items-center gap-2">
-                {QR_SWATCHES.map((c) => (
-                  <button key={c} aria-label={`Code color ${c}`} onClick={() => setFg(c)}
-                    className={`h-9 w-9 rounded-full border-2 transition ${fg === c ? "scale-110 border-primary ring-2 ring-ring/40" : "border-transparent hover:scale-105"}`}
-                    style={{ background: c }} />
+            <div className="flex flex-wrap gap-1 rounded-2xl bg-muted p-1">
+              {(["frame", "shape", "logo", "level"] as const).map((t) => (
+                <button key={t} onClick={() => setDesignTab(t)}
+                  className={`rounded-xl px-4 py-2 text-sm font-bold capitalize transition ${designTab === t ? "bg-card text-primary shadow-soft" : "text-muted-foreground hover:text-foreground"}`}>
+                  {t}
+                </button>
+              ))}
+            </div>
+
+            {designTab === "frame" && (
+              <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
+                {QR_FRAMES.map((f) => (
+                  <button key={f.id} onClick={() => setFrame(f.id)}
+                    className={`grid justify-items-center gap-1 rounded-2xl border p-3 transition ${frame === f.id ? "border-primary bg-secondary shadow-soft" : "hover:border-lavender hover:bg-muted"}`}>
+                    <FrameThumb id={f.id} fg={fg} />
+                    <span className="text-xs font-bold">{f.label}</span>
+                  </button>
                 ))}
-                <input type="color" value={fg} onChange={(e) => setFg(e.target.value)} aria-label="Custom code color" className="h-9 w-12 cursor-pointer rounded-lg border" />
               </div>
-            </div>
-            <div className="grid gap-3 sm:grid-cols-2">
-              <Field label="Background">
-                <div className="flex items-center gap-2">
-                  {["#FFFDFE", "#ffffff", "#f5f3ff", "#111111"].map((c) => (
-                    <button key={c} aria-label={`Background ${c}`} onClick={() => setBg(c)}
-                      className={`h-9 w-9 rounded-full border-2 transition ${bg === c ? "scale-110 border-primary ring-2 ring-ring/40" : "border-border hover:scale-105"}`}
-                      style={{ background: c }} />
+            )}
+
+            {designTab === "shape" && (
+              <div className="grid gap-4">
+                <div className="grid grid-cols-3 gap-2">
+                  {QR_SHAPES.map((s) => (
+                    <button key={s.id} onClick={() => setShape(s.id)}
+                      className={`rounded-2xl border px-3 py-3 text-left transition ${shape === s.id ? "border-primary bg-secondary shadow-soft" : "hover:border-lavender hover:bg-muted"}`}>
+                      <span className="block text-sm font-bold">{s.label}</span>
+                      <span className="block text-xs text-muted-foreground">{s.hint}</span>
+                    </button>
                   ))}
-                  <input type="color" value={bg} onChange={(e) => setBg(e.target.value)} aria-label="Custom background color" className="h-9 w-12 cursor-pointer rounded-lg border" />
                 </div>
-              </Field>
-              <Field label={`Size · ${size}px`}><input type="range" min={128} max={1024} step={32} value={size} onChange={(e) => setSize(+e.target.value)} className={rangeCls} /></Field>
-            </div>
-            <div className="grid gap-3">
-              <span className="text-sm font-semibold">Error-correction level</span>
+                <div className="grid gap-3">
+                  <span className="text-sm font-semibold">Code color</span>
+                  <div className="flex flex-wrap items-center gap-2">
+                    {QR_SWATCHES.map((c) => (
+                      <button key={c} aria-label={`Code color ${c}`} onClick={() => setFg(c)}
+                        className={`h-9 w-9 rounded-full border-2 transition ${fg === c ? "scale-110 border-primary ring-2 ring-ring/40" : "border-transparent hover:scale-105"}`}
+                        style={{ background: c }} />
+                    ))}
+                    <input type="color" value={fg} onChange={(e) => setFg(e.target.value)} aria-label="Custom code color" className="h-9 w-12 cursor-pointer rounded-lg border" />
+                  </div>
+                </div>
+                <div className="grid gap-3 sm:grid-cols-2">
+                  <Field label="Background">
+                    <div className="flex items-center gap-2">
+                      {["#FFFDFE", "#ffffff", "#f5f3ff", "#111111"].map((c) => (
+                        <button key={c} aria-label={`Background ${c}`} onClick={() => setBg(c)}
+                          className={`h-9 w-9 rounded-full border-2 transition ${bg === c ? "scale-110 border-primary ring-2 ring-ring/40" : "border-border hover:scale-105"}`}
+                          style={{ background: c }} />
+                      ))}
+                      <input type="color" value={bg} onChange={(e) => setBg(e.target.value)} aria-label="Custom background color" className="h-9 w-12 cursor-pointer rounded-lg border" />
+                    </div>
+                  </Field>
+                  <Field label={`Size · ${size}px`}><input type="range" min={128} max={1024} step={32} value={size} onChange={(e) => setSize(+e.target.value)} className={rangeCls} /></Field>
+                </div>
+              </div>
+            )}
+
+            {designTab === "logo" && (
+              <div className="grid gap-3">
+                <div className="flex flex-wrap items-center gap-3">
+                  <Btn variant="ghost" onClick={() => logoInputRef.current?.click()}><Upload className="h-4 w-4" />{logo ? "Change logo" : "Upload a logo"}</Btn>
+                  {logo && <Btn variant="ghost" onClick={() => setLogo(null)}><X className="h-4 w-4" />Remove</Btn>}
+                  <input ref={logoInputRef} type="file" hidden accept="image/*"
+                    onChange={async (e) => { const f = e.target.files?.[0]; if (f) setLogo(await loadImage(f)); e.target.value = ""; }} />
+                </div>
+                <p className="text-xs text-muted-foreground">Your logo sits in the middle on a clean patch. We automatically switch to the strongest error correction (H) so the code keeps scanning.</p>
+              </div>
+            )}
+
+            {designTab === "level" && (
               <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
                 {QR_LEVELS.map((l) => (
-                  <button key={l.id} onClick={() => setLevel(l.id)}
-                    className={`rounded-xl border px-3 py-2.5 text-left transition ${level === l.id ? "border-primary bg-secondary shadow-soft" : "hover:border-lavender hover:bg-muted"}`}>
+                  <button key={l.id} onClick={() => setLevel(l.id)} disabled={!!logo}
+                    className={`rounded-xl border px-3 py-2.5 text-left transition disabled:opacity-50 ${level === l.id ? "border-primary bg-secondary shadow-soft" : "hover:border-lavender hover:bg-muted"}`}>
                     <span className="block text-sm font-bold">{l.label}</span>
                     <span className="block text-xs text-muted-foreground">{l.hint}</span>
                   </button>
                 ))}
+                {logo && <p className="col-span-full text-xs text-muted-foreground">Locked to H while a logo is placed — remove the logo to change it.</p>}
               </div>
-            </div>
+            )}
           </div>
         </div>
 
@@ -399,12 +550,13 @@ export function QrGenerator() {
         <div className="grid content-start justify-items-center gap-4 rounded-3xl border bg-muted/50 p-6">
           <StepHead n={3} title="Download your QR" />
           <div className="rounded-2xl bg-card p-4 shadow-elegant">
-            {png ? <img src={png} alt="QR code preview" className="w-56 rounded-lg" /> : <div className="h-56 w-56 rounded-lg bg-muted" />}
+            <canvas ref={canvasRef} className="w-56 rounded-lg" aria-label="QR code preview" />
           </div>
           <div className="flex flex-wrap justify-center gap-2">
-            <DownloadBtn onClick={() => download(png, "qr-code.png")}>PNG</DownloadBtn>
-            <Btn variant="ghost" onClick={async () => download(new Blob([await QRCode.toString(value, { ...opts, type: "svg" })], { type: "image/svg+xml" }), "qr-code.svg")}>SVG</Btn>
+            <DownloadBtn onClick={downloadPng}>PNG</DownloadBtn>
+            <Btn variant="ghost" onClick={plainSvg ? downloadSvg : undefined} disabled={!plainSvg}>SVG</Btn>
           </div>
+          {!plainSvg && <p className="text-center text-xs text-muted-foreground">SVG export is available for the classic square style without a frame or logo.</p>}
           <p className="text-center text-xs text-muted-foreground">Updates live as you type — scan it with your phone to test.</p>
         </div>
       </div>
