@@ -30,6 +30,14 @@ function Anim({ slug }: { slug: string }) {
           <div className="font-display text-sm font-bold text-primary">4.2 MB → 380 KB</div>
         </div>
       );
+    case "link-shortener":
+      return (
+        <div className="flex flex-col items-center gap-3">
+          <div className="rounded-full bg-background px-4 py-2 text-xs font-semibold text-muted-foreground shadow-soft" style={a("pop 3s ease-in-out infinite")}>marvedge.com/a-very-long-link?utm=…</div>
+          <div className="h-6 w-1 rounded bg-lavender" />
+          <div className="rounded-full bg-gradient-primary px-5 py-2 font-display font-bold text-primary-foreground" style={a("pop 3s 0.6s ease-in-out infinite")}>/go/sale</div>
+        </div>
+      );
     case "qr-code-generator":
       return (
         <div className="grid grid-cols-7 gap-1 rounded-2xl bg-background p-3 shadow-soft">

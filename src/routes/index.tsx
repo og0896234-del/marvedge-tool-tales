@@ -7,9 +7,9 @@ import { MarvedgeCTA } from "@/components/MarvedgeCTA";
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "Marvedge Tools — 18 free video, image & AI tools" },
+      { title: "Marvedge Tools — 19 free video, image, link & AI tools" },
       { name: "description", content: "Free browser tools and AI helpers for creators and SaaS teams: MP4 to GIF, compressors, QR codes, subtitles, demo scripts and more." },
-      { property: "og:title", content: "Marvedge Tools — 18 free video, image & AI tools" },
+      { property: "og:title", content: "Marvedge Tools — 19 free video, image, link & AI tools" },
       { property: "og:description", content: "Free browser utilities and AI tools for creators, marketers and SaaS teams." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
@@ -24,7 +24,7 @@ function Index() {
       <section className="relative overflow-hidden bg-hero">
         <div className="mx-auto grid max-w-7xl items-center gap-12 px-5 py-20 md:py-28 lg:grid-cols-[1.1fr_1fr]">
           <div className="animate-fade-up">
-            <span className="rounded-full border bg-card px-3 py-1 text-xs font-bold uppercase tracking-widest text-primary">18 tools · free to start</span>
+            <span className="rounded-full border bg-card px-3 py-1 text-xs font-bold uppercase tracking-widest text-primary">19 tools · free to start</span>
             <h1 className="mt-6 text-5xl font-extrabold leading-[1.02] md:text-7xl">
               Small tools.<br /><span className="text-gradient">Big moments.</span>
             </h1>

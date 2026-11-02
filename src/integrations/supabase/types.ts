@@ -14,7 +14,33 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      short_links: {
+        Row: {
+          clicks: number
+          code: string
+          created_at: string
+          expires_at: string | null
+          password_hash: string | null
+          url: string
+        }
+        Insert: {
+          clicks?: number
+          code: string
+          created_at?: string
+          expires_at?: string | null
+          password_hash?: string | null
+          url: string
+        }
+        Update: {
+          clicks?: number
+          code?: string
+          created_at?: string
+          expires_at?: string | null
+          password_hash?: string | null
+          url?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
