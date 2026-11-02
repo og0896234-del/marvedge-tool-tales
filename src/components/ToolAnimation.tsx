@@ -23,13 +23,14 @@ function Anim({ slug }: { slug: string }) {
         </div>
       );
     case "image-compressor":
-    case "gif-compressor":
       return (
         <div className="flex flex-col items-center gap-4">
           <div className={`h-36 w-48 ${Box}`} style={a("shrink 3.5s ease-in-out infinite")} />
           <div className="font-display text-sm font-bold text-primary">4.2 MB → 380 KB</div>
         </div>
       );
+    case "gif-compressor":
+      return <GifSqueeze />;
     case "link-shortener":
       return (
         <div className="flex flex-col items-center gap-3">
