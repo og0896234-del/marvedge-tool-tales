@@ -33,9 +33,54 @@ function Anim({ slug }: { slug: string }) {
     case "link-shortener":
       return (
         <div className="flex flex-col items-center gap-3">
-          <div className="rounded-full bg-background px-4 py-2 text-xs font-semibold text-muted-foreground shadow-soft" style={a("pop 3s ease-in-out infinite")}>marvedge.com/a-very-long-link?utm=…</div>
-          <div className="h-6 w-1 rounded bg-lavender" />
-          <div className="rounded-full bg-gradient-primary px-5 py-2 font-display font-bold text-primary-foreground" style={a("pop 3s 0.6s ease-in-out infinite")}>/go/sale</div>
+          <div className="rounded-full bg-background px-4 py-2 text-xs font-semibold text-muted-foreground shadow-soft" style={a("ls-long 8s ease-in-out infinite")}>marvedge.com/a-very-long-link?utm=…</div>
+          <svg width="18" height="12" viewBox="0 0 18 12" fill="none" aria-hidden style={a("ls-arrow 8s ease-in-out infinite")}>
+            <path d="M2 2 L9 9 L16 2" stroke="var(--primary)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
+          </svg>
+          <div className="relative flex items-center gap-3 rounded-2xl border bg-card px-4 py-3 shadow-soft" style={a("ls-card 8s ease-in-out infinite")}>
+            <div className="flex items-center gap-1" aria-hidden>
+              {[0, 1, 2, 3, 4].map((i) => (
+                <span key={i} className="h-1.5 w-1.5 rounded-full bg-primary opacity-0"
+                  style={{ ...a("ls-dot 8s ease-out infinite"), animationDelay: `${2.0 + i * 0.18}s` }} />
+              ))}
+            </div>
+            <div className="relative h-10 w-9" aria-hidden>
+              <div className="absolute left-[6px] top-0 h-5 w-6 rounded-t-full border-[3px] border-b-0 border-primary"
+                style={{ ...a("ls-shackle 8s ease-in-out infinite"), transformOrigin: "100% 100%" }} />
+              <div className="absolute bottom-0 left-0 flex h-6 w-9 items-center justify-center rounded-md bg-gradient-primary"
+                style={a("ls-lockbody 8s ease-in-out infinite")}>
+                <span className="h-1.5 w-1.5 rounded-full bg-primary-foreground" />
+              </div>
+            </div>
+            <span className="relative font-display font-bold text-primary">/go/sale
+              <span className="absolute left-0 top-1/2 -mt-[1px] h-[2px] w-full origin-left rounded bg-destructive" style={a("ls-strike 8s ease-out infinite")} />
+            </span>
+            <div className="relative h-11 w-11" aria-hidden style={a("ls-clock 8s ease-in-out infinite")}>
+              <svg viewBox="0 0 44 44" className="h-11 w-11 -rotate-90">
+                <circle cx="22" cy="22" r="18" fill="none" stroke="var(--lavender)" strokeWidth="4" />
+                <circle cx="22" cy="22" r="18" fill="none" stroke="var(--primary)" strokeWidth="4" strokeLinecap="round"
+                  strokeDasharray="113" style={a("ls-ring 8s linear infinite")} />
+              </svg>
+              <div className="absolute bottom-1/2 left-1/2 h-3.5 w-[2px] -ml-[1px] origin-bottom rounded-full bg-primary" style={a("spin-slow 1.6s linear infinite")} />
+            </div>
+            <div className="pointer-events-none absolute inset-y-0 right-0 flex w-16 items-center justify-center">
+              <div className="rounded-md border-2 border-destructive bg-background px-1.5 py-0.5 font-display text-[10px] font-extrabold uppercase tracking-wide text-destructive shadow-soft"
+                style={a("ls-stamp 8s ease-out infinite")}>expired</div>
+            </div>
+          </div>
+          <div className="relative w-60" style={a("ls-meta 8s ease-in-out infinite")}>
+            <div className="h-1.5 overflow-hidden rounded-full bg-secondary">
+              <div className="h-full origin-left rounded-full" style={a("ls-bar 8s linear infinite")} />
+            </div>
+            <div className="relative mt-1.5 h-4 text-[11px] font-semibold">
+              <span className="absolute inset-0 flex items-center justify-between text-muted-foreground" style={a("ls-lbl-out 8s ease-in-out infinite")}>
+                <span>Expires in 24h</span><span>Password protected</span>
+              </span>
+              <span className="absolute inset-0 flex items-center justify-between text-destructive" style={a("ls-lbl-in 8s ease-in-out infinite")}>
+                <span>Expired</span><span>Link disabled</span>
+              </span>
+            </div>
+          </div>
         </div>
       );
     case "qr-code-generator":
