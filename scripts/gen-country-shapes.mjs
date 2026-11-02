@@ -15,7 +15,7 @@ const TARGETS = {
   india: { ids: ["356"], bbox: [68, 6, 98, 37] },
   usa: { ids: ["840"], bbox: [-125, 24, -66, 50] },
   // UK + the Schengen states our presets actually cover.
-  europe: { ids: ["826", "250", "276", "724", "380", "528", "56", "40", "756", "620", "372"], bbox: [-11, 36, 25, 62] },
+  europe: { ids: ["826", "250", "276", "724", "380", "528", "056", "040", "756", "620", "372"], bbox: [-11, 36, 25, 62] },
   mideast: { ids: ["682", "784", "634", "512", "414"], bbox: [34, 12, 62, 43] }, // Saudi, UAE, Qatar, Oman, Kuwait
 };
 
@@ -79,10 +79,12 @@ const parse = (d) => {
 const shape = ({ ids, bbox }, eps = 0.22) => {
   const feats = ids
     .map((id) => {
-      const f = BY_ID.get(id);
-      if (!f) throw new Error(`no geometry for id ${id} — check the code is stored the way world-atlas writes it`);
+      // world-atlas writes ISO numeric codes zero-padded to three digits ("056").
+      const f = BY_ID.get(id) || BY_ID.get(id.padStart(3, "0"));
+      if (!f) throw new Error(`no geometry for id ${id} — not in world-atlas countries-110m`);
       return { type: "Feature", properties: {}, geometry: clip(f.geometry, bbox) };
     })
+
     .filter((f) => f.geometry);
   if (!feats.length) throw new Error(`nothing left after clipping ${ids.join(",")}`);
 
