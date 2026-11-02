@@ -31,9 +31,10 @@ describe("resizer preset cards", () => {
     const signatures = find("india").categories[1].items;
     expect(photos).toHaveLength(6);
     expect(signatures).toHaveLength(4);
-    expect(item("india", "Passport / Passport Seva")).toMatchObject({ w: 413, h: 531, kb: 100 });
-    expect(item("india", "SSC / Govt exam signature")).toMatchObject({ w: 400, h: 200, kb: 20 });
-    expect(item("india", "PAN card signature")).toMatchObject({ w: 213, h: 100, kb: 50 });
+    expect(item("Passport / Passport Seva")).toMatchObject({ w: 413, h: 531, kb: 100 });
+    expect(item("SSC / Govt exam signature")).toMatchObject({ w: 400, h: 200, kb: 20 });
+    expect(item("PAN card signature")).toMatchObject({ w: 213, h: 100, kb: 50 });
+
   });
 
   it("offers signatures for every country group, not just photos", () => {
