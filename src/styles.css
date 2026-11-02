@@ -173,12 +173,12 @@
   .group:hover .insight-vector-float { animation: float-y 3s ease-in-out infinite; }
 }
 
-/* GIF compressor: frames get dropped, colours get cut, the file gets lighter.
-   The before/after states swap on a crisp cut (1% of the 9s loop) so the two
-   never print on top of each other and the stage is never left blank. */
+/* GIF compressor: nothing is dropped — the parts of a frame that never move go
+   transparent, so only the box around the moving figure is saved again.
+   The before/after states swap on a crisp cut so the two never print at once. */
 /* transparency checkerboard — the "nothing to save" look */
 .checker {
-  background-image: conic-gradient(var(--secondary) 90deg, transparent 0 180deg, var(--secondary) 0 270deg, transparent 0);
+  background-image: conic-gradient(var(--lavender) 90deg, transparent 0 180deg, var(--lavender) 0 270deg, transparent 0);
   background-size: 12px 12px;
 }
 @keyframes gc-step4 { from { transform: translateX(0); } to { transform: translateX(-256px); } }
