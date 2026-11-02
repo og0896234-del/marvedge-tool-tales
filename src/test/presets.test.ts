@@ -7,10 +7,10 @@ const item = (title: string) => allPresets().find((p) => p.title === title)!;
 
 
 describe("resizer preset cards", () => {
-  it("has seven groups, four of them drawn from a real map outline", () => {
-    expect(PRESET_GROUPS.map((g) => g.id)).toEqual(["india", "usa", "europe", "mideast", "job", "social", "shop"]);
+  it("has eleven groups, seven of them drawn from a real map outline", () => {
+    expect(PRESET_GROUPS.map((g) => g.id)).toEqual(["india", "usa", "europe", "mideast", "oceania", "latam", "africa", "docs", "job", "social", "shop"]);
     const shaped = PRESET_GROUPS.filter((g) => g.shape);
-    expect(shaped.map((g) => g.id)).toEqual(["india", "usa", "europe", "mideast"]);
+    expect(shaped.map((g) => g.id)).toEqual(["india", "usa", "europe", "mideast", "oceania", "latam", "africa"]);
     for (const g of shaped) {
       const d = COUNTRY_SHAPES[g.shape!] ?? "";
       expect(d, `${g.id} silhouette`).toBeTruthy();
@@ -27,15 +27,12 @@ describe("resizer preset cards", () => {
   });
 
   it("keeps the India photo and signature sizes people actually upload", () => {
-    const photos = find("india").categories[0]!.items;
-    const signatures = find("india").categories[1]!.items;
-
-    expect(photos).toHaveLength(6);
-    expect(signatures).toHaveLength(4);
-    expect(item("Passport / Passport Seva")).toMatchObject({ w: 413, h: 531, kb: 100 });
-    expect(item("SSC / Govt exam signature")).toMatchObject({ w: 400, h: 200, kb: 20 });
-    expect(item("PAN card signature")).toMatchObject({ w: 213, h: 100, kb: 50 });
-
+    expect(item("Aadhaar photo")).toMatchObject({ w: 413, h: 531 });
+    expect(item("IBPS / banking signature")).toMatchObject({ w: 140, h: 60, kb: 20 });
+    expect(item("Sarathi signature")).toMatchObject({ w: 256, h: 64, kb: 20 });
+    expect(item("UPSC ORA photo")).toMatchObject({ w: 110, h: 140, kb: 40 });
+    expect(item("Canada passport")).toMatchObject({ w: 591, h: 827 });
+    expect(item("Bahrain CPR")).toMatchObject({ w: 384, h: 508 });
   });
 
   it("offers signatures for every country group, not just photos", () => {
@@ -50,6 +47,6 @@ describe("resizer preset cards", () => {
       expect(p.h).toBeGreaterThan(0);
       if (p.kb != null) expect(p.kb).toBeGreaterThan(0);
     }
-    expect(allPresets()).toHaveLength(37);
+    expect(allPresets()).toHaveLength(80);
   });
 });
