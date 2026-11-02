@@ -3,8 +3,8 @@ import { COUNTRY_SHAPES } from "@/lib/country-shapes";
 import { PRESET_GROUPS, allPresets } from "@/lib/presets";
 
 const find = (id: string) => PRESET_GROUPS.find((g) => g.id === id)!;
-const item = (id: string, title: string) =>
-  allPresets().find((p) => p.title === title && PRESET_GROUPS.some((g) => g.categories.some((c) => c.items.includes(p))))!;
+const item = (title: string) => allPresets().find((p) => p.title === title)!;
+
 
 describe("resizer preset cards", () => {
   it("has seven groups, four of them drawn from a real map outline", () => {
