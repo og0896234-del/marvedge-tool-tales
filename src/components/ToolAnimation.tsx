@@ -55,7 +55,7 @@ function Anim({ slug }: { slug: string }) {
             <span className="relative font-display font-bold text-primary">/go/sale
               <span className="absolute left-0 top-1/2 -mt-[1px] h-[2px] w-full origin-left rounded bg-destructive" style={a("ls-strike 8s ease-out infinite")} />
             </span>
-            <div className="relative h-11 w-11" aria-hidden>
+            <div className="relative h-11 w-11" aria-hidden style={a("ls-clock 8s ease-in-out infinite")}>
               <svg viewBox="0 0 44 44" className="h-11 w-11 -rotate-90">
                 <circle cx="22" cy="22" r="18" fill="none" stroke="var(--lavender)" strokeWidth="4" />
                 <circle cx="22" cy="22" r="18" fill="none" stroke="var(--primary)" strokeWidth="4" strokeLinecap="round"
