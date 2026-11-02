@@ -142,19 +142,19 @@
 @keyframes spin-slow { to { transform: rotate(360deg); } }
 
 /* Link shortener: long URL shrinks, password dots type in, padlock clicks shut, clock counts down, link expires */
-@keyframes ls-long { 0%,14% { opacity: 1; transform: translateY(0) scale(1); } 22%,92% { opacity: 0; transform: translateY(-8px) scale(.92); } 100% { opacity: 1; transform: translateY(0) scale(1); } }
-@keyframes ls-arrow { 0%,8% { opacity: 0; } 14%,26% { opacity: 1; } 32%,100% { opacity: 0; } }
-@keyframes ls-card { 0%,20% { opacity: 0; transform: translateY(12px) scale(.9); } 28%,90% { opacity: 1; transform: translateY(0) scale(1); } 96%,100% { opacity: 0; transform: translateY(6px) scale(.94); } }
-@keyframes ls-meta { 0%,24% { opacity: 0; transform: translateY(8px); } 32%,88% { opacity: 1; transform: translateY(0); } 94%,100% { opacity: 0; transform: translateY(4px); } }
+@keyframes ls-long { 0%,10% { opacity: 1; transform: translateY(0) scale(1); } 16%,90% { opacity: 0; transform: translateY(-8px) scale(.92); } 100% { opacity: 1; transform: translateY(0) scale(1); } }
+@keyframes ls-arrow { 0%,10% { opacity: 0; } 15%,24% { opacity: 1; } 30%,100% { opacity: 0; } }
+@keyframes ls-card { 0%,18% { opacity: 0; transform: translateY(12px) scale(.9); } 24%,92% { opacity: 1; transform: translateY(0) scale(1); } 96%,100% { opacity: 0; transform: translateY(6px) scale(.94); } }
+@keyframes ls-meta { 0%,22% { opacity: 0; transform: translateY(8px); } 28%,92% { opacity: 1; transform: translateY(0); } 95%,100% { opacity: 0; transform: translateY(4px); } }
 @keyframes ls-dot { 0% { opacity: 0; transform: translateY(5px) scale(.3); } 3%,12% { opacity: 1; transform: translateY(0) scale(1); } 18%,100% { opacity: 0; transform: translateY(-4px) scale(.5); } }
-@keyframes ls-lockbody { 0%,26% { opacity: 0; transform: translateY(-14px) scale(.85); } 34% { opacity: 1; transform: translateY(3px) scale(1.06); } 40%,90% { opacity: 1; transform: translateY(0) scale(1); } 96%,100% { opacity: 0; transform: translateY(-10px) scale(.9); } }
-@keyframes ls-shackle { 0%,40% { transform: rotate(-26deg) translateY(-3px); } 48%,88% { transform: rotate(0) translateY(0); } 95%,100% { transform: rotate(-26deg) translateY(-3px); } }
-@keyframes ls-ring { 0%,50% { stroke-dashoffset: 0; } 85%,100% { stroke-dashoffset: 113; } }
-@keyframes ls-bar { 0%,48% { transform: scaleX(1); background-color: var(--primary); } 78% { background-color: var(--destructive); } 85%,93% { transform: scaleX(0); background-color: var(--destructive); } 94%,100% { transform: scaleX(1); background-color: var(--primary); } }
-@keyframes ls-lbl-out { 0%,78% { opacity: 1; } 85%,100% { opacity: 0; } }
-@keyframes ls-lbl-in { 0%,84% { opacity: 0; } 88%,94% { opacity: 1; } 100% { opacity: 0; } }
-@keyframes ls-strike { 0%,84% { transform: scaleX(0); } 90%,100% { transform: scaleX(1); } }
-@keyframes ls-stamp { 0%,84% { opacity: 0; transform: rotate(-8deg) scale(1.7); } 89%,94% { opacity: 1; transform: rotate(-8deg) scale(1); } 100% { opacity: 0; transform: rotate(-8deg) scale(1); } }
+@keyframes ls-lockbody { 0%,22% { opacity: 0; transform: translateY(-14px) scale(.85); } 30% { opacity: 1; transform: translateY(3px) scale(1.06); } 36%,92% { opacity: 1; transform: translateY(0) scale(1); } 96%,100% { opacity: 0; transform: translateY(-10px) scale(.9); } }
+@keyframes ls-shackle { 0%,38% { transform: rotate(-26deg) translateY(-3px); } 45%,90% { transform: rotate(0) translateY(0); } 95%,100% { transform: rotate(-26deg) translateY(-3px); } }
+@keyframes ls-ring { 0%,48% { stroke-dashoffset: 0; } 76%,100% { stroke-dashoffset: 113; } }
+@keyframes ls-bar { 0%,48% { transform: scaleX(1); background-color: var(--primary); } 70% { background-color: var(--destructive); } 76%,95% { transform: scaleX(0); background-color: var(--destructive); } 96%,100% { transform: scaleX(1); background-color: var(--primary); } }
+@keyframes ls-lbl-out { 0%,70% { opacity: 1; } 76%,100% { opacity: 0; } }
+@keyframes ls-lbl-in { 0%,74% { opacity: 0; } 78%,100% { opacity: 1; } }
+@keyframes ls-strike { 0%,74% { transform: scaleX(0); } 80%,100% { transform: scaleX(1); } }
+@keyframes ls-stamp { 0%,74% { opacity: 0; transform: rotate(-8deg) scale(1.7); } 79%,100% { opacity: 1; transform: rotate(-8deg) scale(1); } }
 
 @utility animate-fade-up { animation: fade-up .7s cubic-bezier(.2,.7,.2,1) both; }
 @utility animate-float { animation: float-y 5s ease-in-out infinite; }
