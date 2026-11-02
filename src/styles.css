@@ -157,6 +157,12 @@
 @keyframes ls-stamp { 0%,74% { opacity: 0; transform: rotate(-8deg) scale(1.7); } 79%,100% { opacity: 1; transform: rotate(-8deg) scale(1); } }
 @keyframes ls-clock { 0%,72% { opacity: 1; transform: scale(1); } 80%,100% { opacity: 0; transform: scale(.8); } }
 
+/* Preset cards stagger in when a country or category is opened. */
+@keyframes preset-in { from { opacity: 0; transform: translateY(10px) scale(.97); } to { opacity: 1; transform: none; } }
+.preset-in { animation: preset-in .4s cubic-bezier(.2,.7,.3,1) both; }
+@media (prefers-reduced-motion: reduce) { .preset-in { animation: none; } }
+
+
 @utility animate-fade-up { animation: fade-up .7s cubic-bezier(.2,.7,.2,1) both; }
 @utility animate-float { animation: float-y 5s ease-in-out infinite; }
 
