@@ -357,7 +357,7 @@ function GifSqueeze() {
         <div className="checker absolute inset-0 opacity-0" style={a("gc-xray 9s linear infinite")} />
         <div className="absolute inset-0" style={a("gc-still 9s linear infinite")}>
           <svg viewBox="0 0 240 144" className="h-full w-full" aria-hidden>
-            <circle cx="40" cy="36" r="13" className="fill-lavender" />
+            <circle cx="112" cy="30" r="12" className="fill-lavender" />
             <rect x="150" y="26" width="52" height="34" rx="5" className="fill-none stroke-lavender" strokeWidth="3" />
             <path d="M158 54 l11 -14 l9 10 l9 -16 l9 20" className="fill-none stroke-lavender" strokeWidth="3" strokeLinejoin="round" />
             <path d="M16 118 H224" className="stroke-lavender" strokeWidth="4" strokeLinecap="round" />
