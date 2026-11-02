@@ -245,8 +245,8 @@ export const toolInsights: Record<string, ToolInsight[]> = {
   "link-shortener": collection([
     ["Born to be short", "Early short-link services appeared because long web addresses kept breaking across lines in emails.", "text"],
     ["Seven characters of power", "Seven letters and numbers can make billions of unique combinations — plenty of room for your sale.", "spark"],
-  ], [
     ["Trust the name", "A readable custom link tells people where they're going before they click.", "frame"],
+  ], [
     ["Self-destruct mode", "Expiring links are perfect for flash sales, time-limited invites and 'oops, wrong file' moments.", "loop"],
     ["Velvet rope", "A password turns a public link into a guest list.", "file"],
     ["Link diet", "My URL lost 230 characters and didn't even go to the gym.", "resize"],
@@ -254,5 +254,6 @@ export const toolInsights: Record<string, ToolInsight[]> = {
     ["Cinderella link", "Set it to expire at midnight. Glass slipper not included.", "spark"],
     ["Tracking code soup", "utm_source=utm_medium=utm_please_stop. Shorten it.", "text"],
     ["Copy, paste, done", "The best link is the one people can read out loud on a call.", "voice"],
+    ["Short and sweet", "Brevity is the soul of wit — and of links.", "text"],
   ]),
 };
