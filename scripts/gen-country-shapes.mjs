@@ -14,9 +14,11 @@ const BY_ID = new Map(FC.features.map((f) => [String(f.id), f]));
 const TARGETS = {
   india: { ids: ["356"], bbox: [68, 6, 98, 37] },
   usa: { ids: ["840"], bbox: [-125, 24, -66, 50] },
-  europe: { ids: ["826", "250", "276"], bbox: [-11, 35, 22, 62] }, // UK, France, Germany
+  // UK + the Schengen states our presets actually cover.
+  europe: { ids: ["826", "250", "276", "724", "380", "528", "56", "40", "756", "620", "372"], bbox: [-11, 36, 25, 62] },
   mideast: { ids: ["682", "784", "634", "512", "414"], bbox: [34, 12, 62, 43] }, // Saudi, UAE, Qatar, Oman, Kuwait
 };
+
 
 const centroid = (r) => {
   let x = 0, y = 0;
@@ -76,11 +78,14 @@ const parse = (d) => {
 
 const shape = ({ ids, bbox }, eps = 0.22) => {
   const feats = ids
-    .map((id) => BY_ID.get(id))
-    .filter(Boolean)
-    .map((f) => ({ type: "Feature", properties: {}, geometry: clip(f.geometry, bbox) }))
+    .map((id) => {
+      const f = BY_ID.get(id);
+      if (!f) throw new Error(`no geometry for id ${id} — check the code is stored the way world-atlas writes it`);
+      return { type: "Feature", properties: {}, geometry: clip(f.geometry, bbox) };
+    })
     .filter((f) => f.geometry);
-  if (!feats.length) throw new Error(`no geometry for ${ids.join(",")}`);
+  if (!feats.length) throw new Error(`nothing left after clipping ${ids.join(",")}`);
+
 
   const proj = geoMercator().fitExtent([[6, 6], [94, 94]], { type: "FeatureCollection", features: feats });
   const path = geoPath().projection(proj);
