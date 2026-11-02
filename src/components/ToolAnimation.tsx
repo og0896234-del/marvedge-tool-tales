@@ -338,24 +338,41 @@ function GifStat({ from, to, hero }: { from: string; to: string; hero?: boolean 
   );
 }
 
-/** A looping character: four frames, then a sweep drops it to two and the file shrinks. */
-function GifSqueeze() {
-  const loop = (poses: ReactNode[], steps: number, cls: string, anim: string) => (
-    <div className={`absolute inset-x-0 bottom-0 flex justify-center ${cls}`} style={a(anim)}>
-      <div className="h-24 w-16 overflow-hidden">
-        <div className="flex w-max" style={a(`gc-step${steps} 1.5s steps(${steps}) infinite`)}>
-          {poses.map((p, i) => <div key={i} className="h-24 w-16 shrink-0">{p}</div>)}
-        </div>
-      </div>
-    </div>
+/** A stat pill whose value never changes — keeping it is the point. */
+function GifKeep({ value }: { value: string }) {
+  return (
+    <span className="flex items-center gap-1 rounded-full border bg-card px-3 py-1 font-display text-xs font-bold text-muted-foreground shadow-soft">
+      <span className="text-primary">✓</span>
+      {value}
+    </span>
   );
+}
 
+/** Every frame, every fps and every colour is kept. The parts of a frame that never
+ *  move simply go transparent, so only the box around the moving figure is saved again. */
+function GifSqueeze() {
   return (
     <div className="gc-stage flex flex-col items-center gap-4">
-      <div className="relative h-32 w-56 overflow-hidden rounded-2xl border bg-card shadow-soft">
-        {loop(GIF_POSES, 4, "opacity-100", "gc-rich 9s linear infinite")}
-        {loop([GIF_POSES[0], GIF_POSES[2]], 2, "opacity-0", "gc-thin 9s linear infinite")}
-        <div className="absolute bottom-3 left-1/2 h-1 w-24 -translate-x-1/2 rounded-full bg-lavender" />
+      <div className="relative h-36 w-60 overflow-hidden rounded-2xl border bg-card shadow-soft">
+        <div className="checker absolute inset-0 opacity-0" style={a("gc-xray 9s linear infinite")} />
+        <div className="absolute inset-0" style={a("gc-still 9s linear infinite")}>
+          <svg viewBox="0 0 240 144" className="h-full w-full" aria-hidden>
+            <circle cx="112" cy="30" r="12" className="fill-lavender" />
+            <rect x="150" y="26" width="52" height="34" rx="5" className="fill-none stroke-lavender" strokeWidth="3" />
+            <path d="M158 54 l11 -14 l9 10 l9 -16 l9 20" className="fill-none stroke-lavender" strokeWidth="3" strokeLinejoin="round" />
+            <path d="M16 118 H224" className="stroke-lavender" strokeWidth="4" strokeLinecap="round" />
+          </svg>
+        </div>
+        <div className="absolute inset-x-0 bottom-2 flex justify-center">
+          <div className="relative h-24 w-16" style={a("gc-walk 9s ease-in-out infinite")}>
+            <div className="absolute -inset-x-1.5 -bottom-1 top-0 rounded-lg border-2 border-dashed border-primary opacity-0" style={a("gc-box 9s ease-out infinite")} />
+            <div className="h-full w-full overflow-hidden">
+              <div className="flex w-max" style={a("gc-step4 1.5s steps(4) infinite")}>
+                {GIF_POSES.map((p, i) => <div key={i} className="h-24 w-16 shrink-0">{p}</div>)}
+              </div>
+            </div>
+          </div>
+        </div>
         <div className="absolute inset-y-0 left-0 w-12 bg-gradient-to-r from-transparent via-primary/30 to-transparent opacity-0" style={a("gc-scan 9s ease-in-out infinite")} />
         <span className="absolute left-3 top-3 rounded-full bg-background px-2 py-0.5 text-[11px] font-bold text-primary shadow-soft">GIF ∞</span>
         <span className="absolute right-3 top-3 rounded-md border-2 border-primary bg-background px-1.5 py-0.5 font-display text-[11px] font-extrabold text-primary opacity-0" style={a("gc-stamp 9s ease-out infinite")}>−81%</span>
@@ -363,23 +380,23 @@ function GifSqueeze() {
 
       <div className="flex items-center gap-1.5">
         {Array.from({ length: 8 }).map((_, i) => (
-          <div key={i} className="relative h-10 w-8 overflow-hidden rounded border bg-card"
-            style={a(`${i % 2 ? "gc-frame-out" : "gc-frame-keep"} 9s ease-in-out ${i * 0.05}s infinite`)}>
-            <div className="flex h-full items-center justify-center">
-              <div className={`h-5 w-5 rounded-sm ${i % 2 ? "bg-lavender" : "bg-gradient-primary"}`} />
-            </div>
-            {i % 2 ? (
-              <span className="absolute inset-0 grid place-items-center font-display text-sm font-extrabold text-destructive opacity-0" style={a("gc-cross 9s linear infinite")}>×</span>
-            ) : null}
+          <div key={i} className="checker relative h-10 w-8 overflow-hidden rounded border bg-card"
+            style={a(`gc-frame 9s linear ${i * 0.12}s infinite`)}>
+            <span className="absolute left-1/2 top-1/2 -ml-1.5 -mt-1.5 h-3 w-3 rounded-sm bg-gradient-primary"
+              style={a(`float-y 1.5s ease-in-out ${i * 0.15}s infinite`)} />
+            <span className="absolute inset-1 rounded border border-dashed border-primary/70" />
           </div>
         ))}
       </div>
 
       <div className="flex flex-wrap items-center justify-center gap-2">
-        <GifStat from="24 fps" to="10 fps" />
-        <GifStat from="256 colours" to="32 colours" />
+        <GifKeep value="24 fps" />
+        <GifKeep value="256 colours" />
         <GifStat from="4.8 MB" to="0.9 MB" hero />
       </div>
+      <p className="max-w-[21rem] text-center text-[11px] font-semibold text-muted-foreground">
+        Every frame kept — only the pixels that never move are dropped.
+      </p>
     </div>
   );
 }
