@@ -369,7 +369,7 @@ function GifSqueeze() {
               <div className={`h-5 w-5 rounded-sm ${i % 2 ? "bg-lavender" : "bg-gradient-primary"}`} />
             </div>
             {i % 2 ? (
-              <span className="absolute inset-0 grid place-items-center font-display text-sm font-extrabold text-destructive opacity-0" style={a("gc-val-in 9s linear infinite")}>×</span>
+              <span className="absolute inset-0 grid place-items-center font-display text-sm font-extrabold text-destructive opacity-0" style={a("gc-cross 9s linear infinite")}>×</span>
             ) : null}
           </div>
         ))}
