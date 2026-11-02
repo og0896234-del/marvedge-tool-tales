@@ -1,6 +1,7 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
-import { CalendarClock, ClipboardPaste, Link2, ShieldCheck, Sparkles } from "lucide-react";
+import { CalendarClock, ClipboardPaste, Link2, QrCode, ShieldCheck, Sparkles } from "lucide-react";
+import QRCode from "qrcode";
 import { createShortLink } from "@/lib/links.functions";
 import { CopyBtn, ErrorNote } from "./ui";
 
@@ -12,18 +13,19 @@ const EXPIRY = [
   { label: "Custom date", h: -1 },
 ];
 
-type Opt = "custom" | "password" | "expiry";
+type Opt = "custom" | "password" | "expiry" | "qr";
 const OPTS: { id: Opt; label: string; Icon: typeof Link2 }[] = [
   { id: "custom", label: "Custom Link", Icon: Link2 },
   { id: "password", label: "Password Protection", Icon: ShieldCheck },
   { id: "expiry", label: "Set Expiration", Icon: CalendarClock },
+  { id: "qr", label: "Generate QR Code", Icon: QrCode },
 ];
 
 const field = "w-full rounded-xl border border-primary-foreground/20 bg-primary-foreground/10 px-3 py-2.5 text-sm text-primary-foreground placeholder:text-primary-foreground/50 outline-none focus:border-lavender";
 
 export function LinkShortener() {
   const [url, setUrl] = useState("");
-  const [on, setOn] = useState<Record<Opt, boolean>>({ custom: false, password: false, expiry: false });
+  const [on, setOn] = useState<Record<Opt, boolean>>({ custom: false, password: false, expiry: false, qr: false });
   const [code, setCode] = useState("");
   const [pw, setPw] = useState("");
   const [exp, setExp] = useState(1);
@@ -31,6 +33,13 @@ export function LinkShortener() {
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState<string | null>(null);
   const [out, setOut] = useState<{ link: string; note: string } | null>(null);
+  const [qr, setQr] = useState("");
+
+  useEffect(() => {
+    if (!out || !on.qr) { setQr(""); return; }
+    QRCode.toDataURL(out.link, { width: 320, margin: 1, color: { dark: "#4C0585", light: "#FFFFFF" } })
+      .then(setQr).catch(() => setQr(""));
+  }, [out, on.qr]);
 
   const paste = async () => {
     try { setUrl((await navigator.clipboard.readText()).trim()); } catch { setErr("Your browser blocked pasting — press Ctrl+V in the box instead."); }
@@ -125,6 +134,12 @@ export function LinkShortener() {
             </div>
             <p className="mt-1 text-sm text-muted-foreground">{out.note}</p>
           </div>
+          {qr && (
+            <a href={qr} download="qr-code.png" title="Download QR code" className="shrink-0 rounded-xl border px-3 py-2 transition hover:border-primary">
+              <img src={qr} alt={`QR code for ${out.link}`} width={112} height={112} className="h-28 w-28" />
+              <span className="mt-1 block text-center text-[11px] font-semibold text-muted-foreground">Download</span>
+            </a>
+          )}
         </div>
       )}
     </div>
