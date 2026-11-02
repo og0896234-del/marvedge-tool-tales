@@ -207,16 +207,21 @@ export function AspectRatio() {
 }
 
 /* ---------- GIF Compressor ---------- */
+const tick = () => new Promise<void>((r) => setTimeout(r, 0));
+
 export function GifCompressor() {
   const [file, setFile] = useState<File | null>(null);
   const [scale, setScale] = useState(75); const [skip, setSkip] = useState(1); const [colors, setColors] = useState(64);
-  const [busy, setBusy] = useState(false); const [res, setRes] = useState<Res | null>(null); const [err, setErr] = useState<string | null>(null);
+  const [busy, setBusy] = useState(false); const [progress, setProgress] = useState(0);
+  const [res, setRes] = useState<Res | null>(null); const [err, setErr] = useState<string | null>(null);
   const [sampling, setSampling] = useState(false);
+  const choose = (f?: File | null) => { setFile(f ?? null); setRes(null); setErr(null); };
   const run = async () => {
-    if (!file) return; setBusy(true); setErr(null); setRes(null);
+    if (!file) return; setBusy(true); setErr(null); setRes(null); setProgress(0);
     try {
       const gif = parseGIF(await file.arrayBuffer());
       const frames = decompressFrames(gif, true);
+      if (!frames.length) throw new Error("no frames");
       const W = gif.lsd.width, H = gif.lsd.height;
       const full = document.createElement("canvas"); full.width = W; full.height = H;
       const fctx = full.getContext("2d", { willReadFrequently: true })!;
@@ -224,42 +229,83 @@ export function GifCompressor() {
       const w = Math.max(1, Math.round((W * scale) / 100)), h = Math.max(1, Math.round((H * scale) / 100));
       const out = document.createElement("canvas"); out.width = w; out.height = h;
       const octx = out.getContext("2d", { willReadFrequently: true })!;
-      const enc = GIFEncoder(); let delay = 0;
-      frames.forEach((f, i) => {
+      octx.imageSmoothingQuality = "high";
+      const enc = GIFEncoder();
+      // What the viewer currently shows, so unchanged pixels can be left transparent.
+      let shown: Uint8Array | null = null;
+      let delay = 0;
+      for (let i = 0; i < frames.length; i++) {
+        const f = frames[i]!;
         const { width, height, top, left } = f.dims;
+        const before = f.disposalType === 3 ? fctx.getImageData(0, 0, W, H) : null;
         patch.width = width; patch.height = height;
         pctx.putImageData(new ImageData(new Uint8ClampedArray(f.patch), width, height), 0, 0);
         fctx.drawImage(patch, left, top);
         delay += f.delay || 100;
-        if (i % skip === 0) {
+        const keep = i % skip === 0 || i === frames.length - 1;
+        if (keep) {
           octx.clearRect(0, 0, w, h); octx.drawImage(full, 0, 0, w, h);
           const { data } = octx.getImageData(0, 0, w, h);
-          const palette = quantize(data, colors);
-          enc.writeFrame(applyPalette(data, palette), w, h, { palette, delay });
+          let hasAlpha = false;
+          for (let p = 3; p < data.length; p += 4) if (data[p]! < 128) { hasAlpha = true; break; }
+          if (hasAlpha) {
+            // Real transparency in the source: write the full frame and clear it before the next.
+            const palette = quantize(data, colors, { format: "rgba4444", oneBitAlpha: true });
+            const index = applyPalette(data, palette, "rgba4444");
+            const t = palette.findIndex((c) => (c[3] ?? 255) === 0);
+            enc.writeFrame(index, w, h, { palette, delay, dispose: 2, transparent: t >= 0, transparentIndex: Math.max(0, t) });
+            shown = null;
+          } else {
+            // Reserve one palette slot as "transparent = keep the previous pixel".
+            const palette = quantize(data, Math.max(2, colors - 1));
+            const T = palette.length; palette.push([0, 0, 0]);
+            const index = applyPalette(data, palette.slice(0, T));
+            if (!shown) shown = new Uint8Array(w * h * 3);
+            const first = i === 0 || !shown.some(Boolean);
+            for (let p = 0; p < index.length; p++) {
+              const c = palette[index[p]!]!, o = p * 3;
+              if (!first && Math.abs(c[0]! - shown[o]!) + Math.abs(c[1]! - shown[o + 1]!) + Math.abs(c[2]! - shown[o + 2]!) <= 18) {
+                index[p] = T;
+              } else { shown[o] = c[0]!; shown[o + 1] = c[1]!; shown[o + 2] = c[2]!; }
+            }
+            enc.writeFrame(index, w, h, { palette, delay, dispose: 1, transparent: !first, transparentIndex: T });
+          }
           delay = 0;
         }
         if (f.disposalType === 2) fctx.clearRect(left, top, width, height);
-      });
+        else if (before) fctx.putImageData(before, 0, 0);
+        setProgress(Math.round(((i + 1) / frames.length) * 100));
+        if (i % 2 === 0) await tick();
+      }
       enc.finish();
       const blob = new Blob([enc.bytes()], { type: "image/gif" });
       setRes({ blob, url: URL.createObjectURL(blob), name: `${baseName(file.name)}-compressed.gif` });
-    } catch { setErr("That file couldn't be read as a GIF."); }
+    } catch { setErr("That file couldn't be read as a GIF. Try another one."); }
     setBusy(false);
   };
+  const saved = res && file ? Math.round((1 - res.blob.size / file.size) * 100) : 0;
   return (
     <Panel>
-      <Dropzone accept="image/gif" label={file ? `Selected: ${file.name} (${fmtBytes(file.size)})` : "Drop a GIF to compress"} onFiles={([f]) => { setFile(f ?? null); setRes(null); }}
-        sample={{ label: "Try a sample GIF", busy: sampling, onPick: async () => { setSampling(true); const f = await loadSample("gif"); setFile(f); setRes(null); setSampling(false); }, note: "A dummy animation so you can see the size drop before using your own." }} />
+      <Dropzone accept="image/gif" label={file ? `Selected: ${file.name} (${fmtBytes(file.size)})` : "Drop a GIF to compress"} onFiles={([f]) => choose(f)}
+        sample={{ label: "Try a sample GIF", busy: sampling, onPick: async () => { setSampling(true); try { choose(await loadSample("gif")); } catch { setErr("Couldn't load the sample GIF."); } setSampling(false); }, note: "A dummy animation so you can see the size drop before using your own." }} />
       {file && (
         <div className="grid gap-4 md:grid-cols-4">
           <Field label={`Size ${scale}%`}><input type="range" min={20} max={100} step={5} value={scale} onChange={(e) => setScale(+e.target.value)} className={rangeCls} /></Field>
-          <Field label={skip === 1 ? "Keep all frames" : `Keep every ${skip} frames`}><input type="range" min={1} max={4} value={skip} onChange={(e) => setSkip(+e.target.value)} className={rangeCls} /></Field>
+          <Field label={skip === 1 ? "Keep all frames" : `Keep 1 in every ${skip} frames`}><input type="range" min={1} max={4} value={skip} onChange={(e) => setSkip(+e.target.value)} className={rangeCls} /></Field>
           <Field label={`Colors ${colors}`}><input type="range" min={16} max={256} step={16} value={colors} onChange={(e) => setColors(+e.target.value)} className={rangeCls} /></Field>
-          <div className="flex items-end"><Btn busy={busy} onClick={run}>Compress GIF</Btn></div>
+          <div className="flex items-end"><Btn busy={busy} onClick={run}>{busy ? `Compressing… ${progress}%` : "Compress GIF"}</Btn></div>
         </div>
       )}
       <ErrorNote msg={err} />
-      {res && file && <><p className="font-display font-bold text-primary">{fmtBytes(file.size)} → {fmtBytes(res.blob.size)} ({Math.round((1 - res.blob.size / file.size) * 100)}% smaller)</p><ResultBox res={res} kind="gif" /></>}
+      {res && file && (
+        <>
+          <p className="font-display font-bold text-primary">
+            {fmtBytes(file.size)} → {fmtBytes(res.blob.size)} {saved > 0 ? `(${saved}% smaller)` : ""}
+          </p>
+          {saved <= 0 && <p className="text-sm text-muted-foreground">This GIF is already well optimised. Lower the size or colours, or keep fewer frames, and try again.</p>}
+          <ResultBox res={res} kind="gif" />
+        </>
+      )}
     </Panel>
   );
 }
