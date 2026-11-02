@@ -34,7 +34,9 @@ function Anim({ slug }: { slug: string }) {
       return (
         <div className="flex flex-col items-center gap-3">
           <div className="rounded-full bg-background px-4 py-2 text-xs font-semibold text-muted-foreground shadow-soft" style={a("ls-long 7s ease-in-out infinite")}>marvedge.com/a-very-long-link?utm=…</div>
-          <div className="h-5 w-1 rounded bg-lavender" style={a("ls-arrow 7s ease-in-out infinite")} />
+          <svg width="18" height="12" viewBox="0 0 18 12" fill="none" aria-hidden style={a("ls-arrow 7s ease-in-out infinite")}>
+            <path d="M2 2 L9 9 L16 2" stroke="var(--primary)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
+          </svg>
           <div className="relative flex items-center gap-3 rounded-2xl border bg-card px-4 py-3 shadow-soft" style={a("ls-card 7s ease-in-out infinite")}>
             <div className="flex items-center gap-1" aria-hidden>
               {[0, 1, 2, 3, 4].map((i) => (
@@ -50,7 +52,9 @@ function Anim({ slug }: { slug: string }) {
                 <span className="h-1.5 w-1.5 rounded-full bg-primary-foreground" />
               </div>
             </div>
-            <span className="font-display font-bold text-primary">/go/sale</span>
+            <span className="relative font-display font-bold text-primary">/go/sale
+              <span className="absolute left-0 top-1/2 -mt-[1px] h-[2px] w-full origin-left rounded bg-destructive" style={a("ls-strike 7s ease-out infinite")} />
+            </span>
             <div className="relative h-11 w-11" aria-hidden>
               <svg viewBox="0 0 44 44" className="h-11 w-11 -rotate-90">
                 <circle cx="22" cy="22" r="18" fill="none" stroke="var(--lavender)" strokeWidth="4" />
@@ -59,8 +63,8 @@ function Anim({ slug }: { slug: string }) {
               </svg>
               <div className="absolute bottom-1/2 left-1/2 h-3.5 w-[2px] -ml-[1px] origin-bottom rounded-full bg-primary" style={a("spin-slow 1.6s linear infinite")} />
             </div>
-            <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
-              <div className="rounded-lg border-2 border-destructive bg-background/90 px-2 py-0.5 font-display text-xs font-extrabold uppercase tracking-wider text-destructive"
+            <div className="pointer-events-none absolute inset-y-0 right-0 flex w-16 items-center justify-center">
+              <div className="rounded-md border-2 border-destructive bg-background px-1.5 py-0.5 font-display text-[10px] font-extrabold uppercase tracking-wide text-destructive shadow-soft"
                 style={a("ls-stamp 7s ease-out infinite")}>expired</div>
             </div>
           </div>
