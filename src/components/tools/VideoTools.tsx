@@ -233,6 +233,7 @@ export function GifCompressor() {
       const enc = GIFEncoder();
       // What the viewer currently shows, so unchanged pixels can be left transparent.
       let shown: Uint8Array | null = null;
+      let shownValid = false;
       let delay = 0;
       for (let i = 0; i < frames.length; i++) {
         const f = frames[i]!;
@@ -254,14 +255,14 @@ export function GifCompressor() {
             const index = applyPalette(data, palette, "rgba4444");
             const t = palette.findIndex((c) => (c[3] ?? 255) === 0);
             enc.writeFrame(index, w, h, { palette, delay, dispose: 2, transparent: t >= 0, transparentIndex: Math.max(0, t) });
-            shown = null;
+            shownValid = false;
           } else {
             // Reserve one palette slot as "transparent = keep the previous pixel".
             const palette = quantize(data, Math.max(2, colors - 1));
             const T = palette.length; palette.push([0, 0, 0]);
             const index = applyPalette(data, palette.slice(0, T));
             if (!shown) shown = new Uint8Array(w * h * 3);
-            const first = i === 0 || !shown.some(Boolean);
+            const first = !shownValid;
             for (let p = 0; p < index.length; p++) {
               const c = palette[index[p]!]!, o = p * 3;
               if (!first && Math.abs(c[0]! - shown[o]!) + Math.abs(c[1]! - shown[o + 1]!) + Math.abs(c[2]! - shown[o + 2]!) <= 18) {
@@ -269,6 +270,7 @@ export function GifCompressor() {
               } else { shown[o] = c[0]!; shown[o + 1] = c[1]!; shown[o + 2] = c[2]!; }
             }
             enc.writeFrame(index, w, h, { palette, delay, dispose: 1, transparent: !first, transparentIndex: T });
+            shownValid = true;
           }
           delay = 0;
         }
