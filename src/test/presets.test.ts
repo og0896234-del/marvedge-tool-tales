@@ -12,7 +12,7 @@ describe("resizer preset cards", () => {
     const shaped = PRESET_GROUPS.filter((g) => g.shape);
     expect(shaped.map((g) => g.id)).toEqual(["india", "usa", "europe", "mideast"]);
     for (const g of shaped) {
-      const d = COUNTRY_SHAPES[g.shape!];
+      const d = COUNTRY_SHAPES[g.shape!] ?? "";
       expect(d, `${g.id} silhouette`).toBeTruthy();
       expect(d.startsWith("M")).toBe(true);
       expect(d.length).toBeGreaterThan(200);
@@ -27,8 +27,9 @@ describe("resizer preset cards", () => {
   });
 
   it("keeps the India photo and signature sizes people actually upload", () => {
-    const photos = find("india").categories[0].items;
-    const signatures = find("india").categories[1].items;
+    const photos = find("india").categories[0]!.items;
+    const signatures = find("india").categories[1]!.items;
+
     expect(photos).toHaveLength(6);
     expect(signatures).toHaveLength(4);
     expect(item("Passport / Passport Seva")).toMatchObject({ w: 413, h: 531, kb: 100 });

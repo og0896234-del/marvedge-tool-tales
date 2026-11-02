@@ -31,11 +31,12 @@ export function PresetPicker({
   h: number;
   kb: number | "";
 }) {
-  const [groupId, setGroupId] = useState(PRESET_GROUPS[0].id);
+  const [groupId, setGroupId] = useState(PRESET_GROUPS[0]!.id);
   const [catIndex, setCatIndex] = useState(0);
-  const group = PRESET_GROUPS.find((g) => g.id === groupId) ?? PRESET_GROUPS[0];
+  const group = PRESET_GROUPS.find((g) => g.id === groupId) ?? PRESET_GROUPS[0]!;
   const cat = Math.min(catIndex, group.categories.length - 1);
-  const active = group.categories[cat];
+  const active = group.categories[cat] ?? group.categories[0]!;
+
   const applied = (p: Preset) => p.w === w && p.h === h && (p.kb ?? "") === kb;
 
   const chooseGroup = (g: PresetGroup) => {
