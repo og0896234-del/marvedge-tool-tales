@@ -279,7 +279,8 @@ function StepHead({ n, title }: { n: number; title: string }) {
   );
 }
 
-type QrShape = "square" | "rounded" | "dots";
+type QrShape = "square" | "rounded" | "dots" | "diamond" | "star" | "classy" | "fluid" | "bars";
+type QrCorner = "square" | "rounded" | "circle" | "leaf";
 type QrFrame = "none" | "border" | "banner" | "badge";
 type QrDesignTab = "frame" | "shape" | "logo" | "level";
 
@@ -287,7 +288,37 @@ function rr(ctx: CanvasRenderingContext2D, x: number, y: number, w: number, h: n
   ctx.beginPath(); ctx.roundRect(x, y, w, h, Math.max(0, Math.min(r, w / 2, h / 2)));
 }
 
-function drawQr(canvas: HTMLCanvasElement, value: string, o: { fg: string; bg: string; size: number; level: "L" | "M" | "Q" | "H"; shape: QrShape; frame: QrFrame; logo: HTMLImageElement | null }) {
+function drawModule(ctx: CanvasRenderingContext2D, shape: QrShape, x: number, y: number, cell: number, on: (dr: number, dc: number) => boolean) {
+  const cx = x + cell / 2, cy = y + cell / 2;
+  if (shape === "dots") { ctx.beginPath(); ctx.arc(cx, cy, cell * 0.42, 0, 7); ctx.fill(); }
+  else if (shape === "rounded") { rr(ctx, x + cell * 0.08, y + cell * 0.08, cell * 0.84, cell * 0.84, cell * 0.38); ctx.fill(); }
+  else if (shape === "diamond") { ctx.beginPath(); ctx.moveTo(cx, y); ctx.lineTo(x + cell, cy); ctx.lineTo(cx, y + cell); ctx.lineTo(x, cy); ctx.closePath(); ctx.fill(); }
+  else if (shape === "star") {
+    ctx.beginPath();
+    for (let i = 0; i < 10; i++) { const a = -Math.PI / 2 + (i * Math.PI) / 5, rad = i % 2 ? cell * 0.24 : cell * 0.54; ctx.lineTo(cx + Math.cos(a) * rad, cy + Math.sin(a) * rad); }
+    ctx.closePath(); ctx.fill();
+  }
+  else if (shape === "classy") { ctx.beginPath(); ctx.roundRect(x + cell * 0.04, y + cell * 0.04, cell * 0.92, cell * 0.92, [cell * 0.46, 0, cell * 0.46, 0]); ctx.fill(); }
+  else if (shape === "fluid") {
+    rr(ctx, x, y, cell, cell, cell * 0.5); ctx.fill();
+    if (on(0, 1)) ctx.fillRect(cx, y, cell, cell);
+    if (on(1, 0)) ctx.fillRect(x, cy, cell, cell);
+  }
+  else if (shape === "bars") {
+    rr(ctx, x + cell * 0.14, y, cell * 0.72, cell, cell * 0.36); ctx.fill();
+    if (on(1, 0)) ctx.fillRect(x + cell * 0.14, cy, cell * 0.72, cell);
+  }
+  else ctx.fillRect(x, y, cell + 0.5, cell + 0.5);
+}
+
+function cornerRadii(corner: QrCorner, s: number): number | number[] {
+  if (corner === "square") return 0;
+  if (corner === "circle") return s / 2;
+  if (corner === "leaf") return [s * 0.45, 0, s * 0.45, 0];
+  return s * 0.25;
+}
+
+function drawQr(canvas: HTMLCanvasElement, value: string, o: { fg: string; bg: string; size: number; level: "L" | "M" | "Q" | "H"; shape: QrShape; corner: QrCorner; frame: QrFrame; logo: HTMLImageElement | null }) {
   const qr = QRCode.create(value, { errorCorrectionLevel: o.logo ? "H" : o.level });
   const n = qr.modules.size;
   const data = qr.modules.data;
@@ -317,16 +348,17 @@ function drawQr(canvas: HTMLCanvasElement, value: string, o: { fg: string; bg: s
   for (let r = 0; r < n; r++) for (let c = 0; c < n; c++) {
     if (!data[r * n + c] || isFinder(r, c)) continue;
     const x = ox + c * cell, y = oy + r * cell;
-    if (o.shape === "dots") { ctx.beginPath(); ctx.arc(x + cell / 2, y + cell / 2, cell * 0.42, 0, 7); ctx.fill(); }
-    else if (o.shape === "rounded") { rr(ctx, x + cell * 0.08, y + cell * 0.08, cell * 0.84, cell * 0.84, cell * 0.38); ctx.fill(); }
-    else ctx.fillRect(x, y, cell + 0.5, cell + 0.5);
+    drawModule(ctx, o.shape, x, y, cell, (dr, dc) => {
+      const rr2 = r + dr, cc = c + dc;
+      return rr2 < n && cc < n && !!data[rr2 * n + cc] && !isFinder(rr2, cc);
+    });
   }
-  const fr = o.shape === "square" ? 0 : cell * 1.2;
+  const box = (x: number, y: number, s: number) => { ctx.beginPath(); ctx.roundRect(x, y, s, s, cornerRadii(o.corner, s)); ctx.fill(); };
   const finder = (r0: number, c0: number) => {
     const x = ox + c0 * cell, y = oy + r0 * cell, s = cell * 7;
-    ctx.fillStyle = o.fg; rr(ctx, x, y, s, s, fr); ctx.fill();
-    ctx.fillStyle = o.bg; rr(ctx, x + cell, y + cell, s - cell * 2, s - cell * 2, fr * 0.7); ctx.fill();
-    ctx.fillStyle = o.fg; rr(ctx, x + cell * 2, y + cell * 2, s - cell * 4, s - cell * 4, fr * 0.5); ctx.fill();
+    ctx.fillStyle = o.fg; box(x, y, s);
+    ctx.fillStyle = o.bg; box(x + cell, y + cell, s - cell * 2);
+    ctx.fillStyle = o.fg; box(x + cell * 2, y + cell * 2, s - cell * 4);
   };
   finder(0, 0); finder(0, n - 7); finder(n - 7, 0);
   if (o.logo) {
@@ -350,7 +382,42 @@ const QR_SHAPES: { id: QrShape; label: string; hint: string }[] = [
   { id: "square", label: "Classic", hint: "Sharp square modules" },
   { id: "rounded", label: "Rounded", hint: "Soft corners" },
   { id: "dots", label: "Dots", hint: "Playful circles" },
+  { id: "diamond", label: "Diamond", hint: "Sharp gems" },
+  { id: "star", label: "Stars", hint: "Little sparkles" },
+  { id: "classy", label: "Classy", hint: "Leaf-cut corners" },
+  { id: "fluid", label: "Fluid", hint: "Blobs that join up" },
+  { id: "bars", label: "Bars", hint: "Vertical stripes" },
 ];
+const QR_CORNERS: { id: QrCorner; label: string }[] = [
+  { id: "square", label: "Square" },
+  { id: "rounded", label: "Rounded" },
+  { id: "circle", label: "Circle" },
+  { id: "leaf", label: "Leaf" },
+];
+const THUMB = [1,1,0,1,0, 0,1,1,1,1, 1,0,1,0,1, 1,1,1,0,0, 0,1,0,1,1];
+function ShapeThumb({ shape }: { shape: QrShape }) {
+  const ref = useRef<HTMLCanvasElement>(null);
+  useEffect(() => {
+    const c = ref.current; if (!c) return;
+    const ctx = c.getContext("2d")!; c.width = 100; c.height = 100;
+    ctx.clearRect(0, 0, 100, 100); ctx.fillStyle = "#4C0585";
+    for (let r = 0; r < 5; r++) for (let k = 0; k < 5; k++) if (THUMB[r * 5 + k])
+      drawModule(ctx, shape, 4 + k * 18.4, 4 + r * 18.4, 18.4, (dr, dc) => r + dr < 5 && k + dc < 5 && !!THUMB[(r + dr) * 5 + k + dc]);
+  }, [shape]);
+  return <canvas ref={ref} className="mb-2 h-12 w-12" aria-hidden />;
+}
+function CornerThumb({ corner }: { corner: QrCorner }) {
+  const r = (s: number) => { const v = cornerRadii(corner, s); return Array.isArray(v) ? v[0] : v; };
+  const leaf = corner === "leaf";
+  const style = (s: number) => leaf ? { borderRadius: `${r(s)}px 0 ${r(s)}px 0` } : { borderRadius: r(s) };
+  return (
+    <span className="mb-2 grid h-12 w-12 place-items-center bg-primary" style={style(48)}>
+      <span className="grid h-8 w-8 place-items-center bg-background" style={style(32)}>
+        <span className="h-4 w-4 bg-primary" style={style(16)} />
+      </span>
+    </span>
+  );
+}
 const QR_FRAMES: { id: QrFrame; label: string }[] = [
   { id: "none", label: "No frame" },
   { id: "border", label: "Border" },
@@ -384,6 +451,7 @@ export function QrGenerator() {
   const [designTab, setDesignTab] = useState<QrDesignTab>("frame");
   const [frame, setFrame] = useState<QrFrame>("none");
   const [shape, setShape] = useState<QrShape>("square");
+  const [corner, setCorner] = useState<QrCorner>("square");
   const [logo, setLogo] = useState<HTMLImageElement | null>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const logoInputRef = useRef<HTMLInputElement>(null);
@@ -394,13 +462,13 @@ export function QrGenerator() {
     : type === "phone" ? `tel:${phone.replace(/[^+\d]/g, "")}`
     : type === "vcard" ? ["BEGIN:VCARD", "VERSION:3.0", `FN:${vName}`, vOrg && `ORG:${vOrg}`, vTel && `TEL:${vTel}`, vMail && `EMAIL:${vMail}`, vUrl && `URL:${vUrl}`, "END:VCARD"].filter(Boolean).join("\n")
     : text;
-  const plainSvg = shape === "square" && frame === "none" && !logo;
+  const plainSvg = shape === "square" && corner === "square" && frame === "none" && !logo;
 
   useEffect(() => {
     const c = canvasRef.current;
     if (!c || !value.trim()) return;
-    try { drawQr(c, value, { fg, bg, size, level, shape, frame, logo }); } catch { /* invalid content — keep last frame */ }
-  }, [value, fg, bg, size, level, shape, frame, logo]);
+    try { drawQr(c, value, { fg, bg, size, level, shape, corner, frame, logo }); } catch { /* invalid content — keep last frame */ }
+  }, [value, fg, bg, size, level, shape, corner, frame, logo]);
 
   const downloadPng = () => { const c = canvasRef.current; if (c) download(c.toDataURL("image/png"), "qr-code.png"); };
   const downloadSvg = async () => download(new Blob([await QRCode.toString(value, { width: size, margin: 2, color: { dark: fg, light: bg }, errorCorrectionLevel: level, type: "svg" })], { type: "image/svg+xml" }), "qr-code.svg");
@@ -484,12 +552,24 @@ export function QrGenerator() {
 
             {designTab === "shape" && (
               <div className="grid gap-4">
-                <div className="grid grid-cols-3 gap-2">
+                <span className="text-sm font-semibold">Dot style</span>
+                <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
                   {QR_SHAPES.map((s) => (
                     <button key={s.id} onClick={() => setShape(s.id)}
                       className={`rounded-2xl border px-3 py-3 text-left transition ${shape === s.id ? "border-primary bg-secondary shadow-soft" : "hover:border-lavender hover:bg-muted"}`}>
+                      <ShapeThumb shape={s.id} />
                       <span className="block text-sm font-bold">{s.label}</span>
                       <span className="block text-xs text-muted-foreground">{s.hint}</span>
+                    </button>
+                  ))}
+                </div>
+                <span className="text-sm font-semibold">Corner eyes</span>
+                <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
+                  {QR_CORNERS.map((k) => (
+                    <button key={k.id} onClick={() => setCorner(k.id)}
+                      className={`flex flex-col items-center rounded-2xl border px-3 py-3 transition ${corner === k.id ? "border-primary bg-secondary shadow-soft" : "hover:border-lavender hover:bg-muted"}`}>
+                      <CornerThumb corner={k.id} />
+                      <span className="text-sm font-bold">{k.label}</span>
                     </button>
                   ))}
                 </div>
