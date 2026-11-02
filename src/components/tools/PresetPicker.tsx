@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Briefcase, Check, Smartphone, ShoppingCart } from "lucide-react";
+import { Briefcase, Check, FileText, Smartphone, ShoppingCart } from "lucide-react";
 import { COUNTRY_SHAPES } from "@/lib/country-shapes";
 import { PRESET_GROUPS, type Preset, type PresetGroup } from "@/lib/presets";
 
@@ -14,6 +14,7 @@ function GroupMark({ group }: { group: PresetGroup }) {
     );
   }
   if (group.icon === "phone") return <Smartphone className="h-8 w-8" aria-hidden="true" />;
+  if (group.icon === "file") return <FileText className="h-8 w-8" aria-hidden="true" />;
   if (group.icon === "cart") return <ShoppingCart className="h-8 w-8" aria-hidden="true" />;
   return <Briefcase className="h-8 w-8" aria-hidden="true" />;
 }
@@ -51,7 +52,7 @@ export function PresetPicker({
         <p className="text-xs text-muted-foreground">Common official sizes; always confirm on the portal you upload to.</p>
       </div>
 
-      <div role="group" aria-label="Country or category" className="grid grid-cols-2 gap-2 sm:grid-cols-4 lg:grid-cols-7">
+      <div role="group" aria-label="Country or category" className="grid grid-cols-2 gap-2 sm:grid-cols-4 md:grid-cols-5 xl:grid-cols-6">
         {PRESET_GROUPS.map((g) => {
           const on = g.id === groupId;
           const count = g.categories.reduce((n, c) => n + c.items.length, 0);
@@ -126,6 +127,7 @@ export function PresetPicker({
                 <span className="mt-0.5 block text-xs text-muted-foreground">
                   {p.w}×{p.h} px{p.mm ? ` · ${p.mm}` : ""}
                 </span>
+                {p.note && <span className="mt-0.5 block text-[11px] leading-snug text-muted-foreground">{p.note}</span>}
                 {p.kb != null && (
                   <span className="mt-2 inline-block rounded-full bg-primary/10 px-2 py-0.5 text-[11px] font-bold text-primary">
                     ≤ {fmtKB(p.kb)}
