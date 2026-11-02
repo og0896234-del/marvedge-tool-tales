@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import QRCode from "qrcode";
 import JSZip from "jszip";
 import { PDFDocument, StandardFonts, rgb } from "pdf-lib";
-import { AlertTriangle, ArrowDown, ArrowUp, Check, Loader2, X } from "lucide-react";
+import { AlertTriangle, ArrowDown, ArrowUp, Check, Globe, IdCard, Loader2, Mail, Phone, Type, Wifi, X } from "lucide-react";
 import { loadSample } from "@/lib/samples";
 import { PresetPicker } from "@/components/tools/PresetPicker";
 
@@ -253,46 +253,159 @@ export function FormatConverter() {
 }
 
 /* ---------- QR Code ---------- */
+type QrType = "url" | "text" | "wifi" | "email" | "phone" | "vcard";
+const QR_TYPES: { id: QrType; label: string; Icon: typeof Globe }[] = [
+  { id: "url", label: "Website", Icon: Globe },
+  { id: "text", label: "Text", Icon: Type },
+  { id: "wifi", label: "Wi-Fi", Icon: Wifi },
+  { id: "email", label: "Email", Icon: Mail },
+  { id: "phone", label: "Phone", Icon: Phone },
+  { id: "vcard", label: "vCard", Icon: IdCard },
+];
+const QR_LEVELS = [
+  { id: "L", label: "L · 7%", hint: "Smallest code" },
+  { id: "M", label: "M · 15%", hint: "Everyday use" },
+  { id: "Q", label: "Q · 25%", hint: "Print & posters" },
+  { id: "H", label: "H · 30%", hint: "Withstands damage" },
+] as const;
+const QR_SWATCHES = ["#4C0585", "#1e1b4b", "#0f766e", "#b45309", "#be123c", "#111111"];
+
+function StepHead({ n, title }: { n: number; title: string }) {
+  return (
+    <div className="flex items-center gap-2.5">
+      <span className="grid h-7 w-7 place-items-center rounded-lg bg-gradient-primary font-display text-sm font-extrabold text-primary-foreground">{n}</span>
+      <h3 className="font-display text-lg font-bold">{title}</h3>
+    </div>
+  );
+}
+
 export function QrGenerator() {
-  const [type, setType] = useState<"url" | "text" | "wifi">("url");
+  const [type, setType] = useState<QrType>("url");
   const [text, setText] = useState("https://marvedge.com/");
   const [ssid, setSsid] = useState(""); const [pass, setPass] = useState(""); const [enc, setEnc] = useState("WPA");
+  const [mailTo, setMailTo] = useState(""); const [mailSub, setMailSub] = useState(""); const [mailBody, setMailBody] = useState("");
+  const [phone, setPhone] = useState("");
+  const [vName, setVName] = useState(""); const [vOrg, setVOrg] = useState(""); const [vTel, setVTel] = useState(""); const [vMail, setVMail] = useState(""); const [vUrl, setVUrl] = useState("");
   const [fg, setFg] = useState("#4C0585"); const [bg, setBg] = useState("#FFFDFE");
   const [size, setSize] = useState(512);
+  const [level, setLevel] = useState<"L" | "M" | "Q" | "H">("M");
   const [png, setPng] = useState("");
-  const value = type === "wifi" ? `WIFI:T:${enc};S:${ssid};P:${pass};;` : text;
-  const opts = { width: size, margin: 2, color: { dark: fg, light: bg }, errorCorrectionLevel: "M" as const };
-  useEffect(() => { if (value.trim()) QRCode.toDataURL(value, opts).then(setPng).catch(() => setPng("")); }, [value, fg, bg, size]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  const value =
+    type === "wifi" ? `WIFI:T:${enc};S:${ssid};P:${pass};;`
+    : type === "email" ? `mailto:${mailTo}?subject=${encodeURIComponent(mailSub)}&body=${encodeURIComponent(mailBody)}`
+    : type === "phone" ? `tel:${phone.replace(/[^+\d]/g, "")}`
+    : type === "vcard" ? ["BEGIN:VCARD", "VERSION:3.0", `FN:${vName}`, vOrg && `ORG:${vOrg}`, vTel && `TEL:${vTel}`, vMail && `EMAIL:${vMail}`, vUrl && `URL:${vUrl}`, "END:VCARD"].filter(Boolean).join("\n")
+    : text;
+  const opts = { width: size, margin: 2, color: { dark: fg, light: bg }, errorCorrectionLevel: level };
+  useEffect(() => { if (value.trim()) QRCode.toDataURL(value, opts).then(setPng).catch(() => setPng("")); }, [value, fg, bg, size, level]); // eslint-disable-line react-hooks/exhaustive-deps
+
   return (
     <Panel>
-      <div className="grid gap-6 lg:grid-cols-[1fr_320px]">
-        <div className="grid content-start gap-4">
-          <div className="flex gap-2">
-            {(["url", "text", "wifi"] as const).map((t) => (
-              <button key={t} onClick={() => setType(t)} className={`rounded-full border px-4 py-2 text-sm font-bold uppercase ${type === t ? "bg-gradient-primary text-primary-foreground" : "hover:bg-secondary"}`}>{t === "wifi" ? "Wi-Fi" : t}</button>
-            ))}
+      {/* type tabs */}
+      <div className="flex flex-wrap gap-2">
+        {QR_TYPES.map(({ id, label, Icon }) => (
+          <button key={id} onClick={() => setType(id)}
+            className={`inline-flex items-center gap-2 rounded-xl border px-4 py-2.5 text-sm font-bold transition ${type === id ? "border-primary bg-secondary text-primary shadow-soft" : "hover:border-lavender hover:bg-muted"}`}>
+            <span className={`grid h-7 w-7 place-items-center rounded-lg ${type === id ? "bg-gradient-primary text-primary-foreground" : "bg-muted text-primary"}`}><Icon className="h-4 w-4" /></span>
+            {label}
+          </button>
+        ))}
+      </div>
+
+      <div className="grid gap-8 lg:grid-cols-[1fr_300px]">
+        <div className="grid content-start gap-7">
+          {/* step 1: content */}
+          <div className="grid gap-3">
+            <StepHead n={1} title="Complete the content" />
+            {type === "wifi" && (
+              <div className="grid gap-3 sm:grid-cols-3">
+                <Field label="Network name"><input className={inputCls} value={ssid} onChange={(e) => setSsid(e.target.value)} placeholder="MyHomeWifi" /></Field>
+                <Field label="Password"><input className={inputCls} value={pass} onChange={(e) => setPass(e.target.value)} /></Field>
+                <Field label="Security"><select className={inputCls} value={enc} onChange={(e) => setEnc(e.target.value)}><option>WPA</option><option>WEP</option><option value="nopass">None</option></select></Field>
+              </div>
+            )}
+            {type === "email" && (
+              <div className="grid gap-3">
+                <div className="grid gap-3 sm:grid-cols-2">
+                  <Field label="Send to"><input className={inputCls} value={mailTo} onChange={(e) => setMailTo(e.target.value)} placeholder="hello@example.com" /></Field>
+                  <Field label="Subject"><input className={inputCls} value={mailSub} onChange={(e) => setMailSub(e.target.value)} /></Field>
+                </div>
+                <Field label="Message"><textarea rows={2} className={inputCls} value={mailBody} onChange={(e) => setMailBody(e.target.value)} /></Field>
+              </div>
+            )}
+            {type === "phone" && (
+              <Field label="Phone number" hint="Include the country code, e.g. +91 98765 43210"><input className={inputCls} value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="+91 98765 43210" /></Field>
+            )}
+            {type === "vcard" && (
+              <div className="grid gap-3 sm:grid-cols-2">
+                <Field label="Full name"><input className={inputCls} value={vName} onChange={(e) => setVName(e.target.value)} placeholder="Asha Verma" /></Field>
+                <Field label="Company"><input className={inputCls} value={vOrg} onChange={(e) => setVOrg(e.target.value)} /></Field>
+                <Field label="Phone"><input className={inputCls} value={vTel} onChange={(e) => setVTel(e.target.value)} /></Field>
+                <Field label="Email"><input className={inputCls} value={vMail} onChange={(e) => setVMail(e.target.value)} /></Field>
+                <Field label="Website"><input className={inputCls} value={vUrl} onChange={(e) => setVUrl(e.target.value)} /></Field>
+              </div>
+            )}
+            {(type === "url" || type === "text") && (
+              <Field label={type === "url" ? "Enter your website" : "Enter your text"}>
+                <textarea rows={type === "url" ? 1 : 3} className={inputCls} value={text} onChange={(e) => setText(e.target.value)} placeholder={type === "url" ? "E.g. https://www.myweb.com/" : "Anything you like…"} />
+              </Field>
+            )}
           </div>
-          {type === "wifi" ? (
-            <div className="grid gap-3 sm:grid-cols-3">
-              <Field label="Network name"><input className={inputCls} value={ssid} onChange={(e) => setSsid(e.target.value)} /></Field>
-              <Field label="Password"><input className={inputCls} value={pass} onChange={(e) => setPass(e.target.value)} /></Field>
-              <Field label="Security"><select className={inputCls} value={enc} onChange={(e) => setEnc(e.target.value)}><option>WPA</option><option>WEP</option><option value="nopass">None</option></select></Field>
+
+          {/* step 2: design */}
+          <div className="grid gap-4">
+            <StepHead n={2} title="Design your QR" />
+            <div className="grid gap-3">
+              <span className="text-sm font-semibold">Code color</span>
+              <div className="flex flex-wrap items-center gap-2">
+                {QR_SWATCHES.map((c) => (
+                  <button key={c} aria-label={`Code color ${c}`} onClick={() => setFg(c)}
+                    className={`h-9 w-9 rounded-full border-2 transition ${fg === c ? "scale-110 border-primary ring-2 ring-ring/40" : "border-transparent hover:scale-105"}`}
+                    style={{ background: c }} />
+                ))}
+                <input type="color" value={fg} onChange={(e) => setFg(e.target.value)} aria-label="Custom code color" className="h-9 w-12 cursor-pointer rounded-lg border" />
+              </div>
             </div>
-          ) : (
-            <Field label={type === "url" ? "Link" : "Text"}><textarea rows={3} className={inputCls} value={text} onChange={(e) => setText(e.target.value)} /></Field>
-          )}
-          <div className="grid grid-cols-3 gap-3">
-            <Field label="Code color"><input type="color" value={fg} onChange={(e) => setFg(e.target.value)} className="h-11 w-full rounded-xl border" /></Field>
-            <Field label="Background"><input type="color" value={bg} onChange={(e) => setBg(e.target.value)} className="h-11 w-full rounded-xl border" /></Field>
-            <Field label={`Size ${size}px`}><input type="range" min={128} max={1024} step={32} value={size} onChange={(e) => setSize(+e.target.value)} className={rangeCls} /></Field>
+            <div className="grid gap-3 sm:grid-cols-2">
+              <Field label="Background">
+                <div className="flex items-center gap-2">
+                  {["#FFFDFE", "#ffffff", "#f5f3ff", "#111111"].map((c) => (
+                    <button key={c} aria-label={`Background ${c}`} onClick={() => setBg(c)}
+                      className={`h-9 w-9 rounded-full border-2 transition ${bg === c ? "scale-110 border-primary ring-2 ring-ring/40" : "border-border hover:scale-105"}`}
+                      style={{ background: c }} />
+                  ))}
+                  <input type="color" value={bg} onChange={(e) => setBg(e.target.value)} aria-label="Custom background color" className="h-9 w-12 cursor-pointer rounded-lg border" />
+                </div>
+              </Field>
+              <Field label={`Size · ${size}px`}><input type="range" min={128} max={1024} step={32} value={size} onChange={(e) => setSize(+e.target.value)} className={rangeCls} /></Field>
+            </div>
+            <div className="grid gap-3">
+              <span className="text-sm font-semibold">Error-correction level</span>
+              <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
+                {QR_LEVELS.map((l) => (
+                  <button key={l.id} onClick={() => setLevel(l.id)}
+                    className={`rounded-xl border px-3 py-2.5 text-left transition ${level === l.id ? "border-primary bg-secondary shadow-soft" : "hover:border-lavender hover:bg-muted"}`}>
+                    <span className="block text-sm font-bold">{l.label}</span>
+                    <span className="block text-xs text-muted-foreground">{l.hint}</span>
+                  </button>
+                ))}
+              </div>
+            </div>
           </div>
         </div>
-        <div className="grid content-start justify-items-center gap-3">
-          {png ? <img src={png} alt="QR code" className="w-64 rounded-2xl shadow-elegant" /> : <div className="h-64 w-64 rounded-2xl bg-muted" />}
-          <div className="flex gap-2">
+
+        {/* step 3: download */}
+        <div className="grid content-start justify-items-center gap-4 rounded-3xl border bg-muted/50 p-6">
+          <StepHead n={3} title="Download your QR" />
+          <div className="rounded-2xl bg-card p-4 shadow-elegant">
+            {png ? <img src={png} alt="QR code preview" className="w-56 rounded-lg" /> : <div className="h-56 w-56 rounded-lg bg-muted" />}
+          </div>
+          <div className="flex flex-wrap justify-center gap-2">
             <DownloadBtn onClick={() => download(png, "qr-code.png")}>PNG</DownloadBtn>
             <Btn variant="ghost" onClick={async () => download(new Blob([await QRCode.toString(value, { ...opts, type: "svg" })], { type: "image/svg+xml" }), "qr-code.svg")}>SVG</Btn>
           </div>
+          <p className="text-center text-xs text-muted-foreground">Updates live as you type — scan it with your phone to test.</p>
         </div>
       </div>
     </Panel>
