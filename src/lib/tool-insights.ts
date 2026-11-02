@@ -254,6 +254,5 @@ export const toolInsights: Record<string, ToolInsight[]> = {
     ["Cinderella link", "Set it to expire at midnight. Glass slipper not included.", "spark"],
     ["Tracking code soup", "utm_source=utm_medium=utm_please_stop. Shorten it.", "text"],
     ["Copy, paste, done", "The best link is the one people can read out loud on a call.", "voice"],
-    ["Short and sweet", "Brevity is the soul of wit — and of links.", "text"],
   ]),
 };
