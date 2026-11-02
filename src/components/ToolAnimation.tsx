@@ -103,11 +103,7 @@ function Anim({ slug }: { slug: string }) {
         </div>
       );
     case "image-resizer":
-      return (
-        <div className={`relative h-48 w-64 ${Soft}`}>
-          <div className="absolute rounded-md border-2 border-dashed border-primary bg-primary/15" style={a("crop 5s ease-in-out infinite")} />
-        </div>
-      );
+      return <ResizeAnything />;
     case "image-format-converter":
       return (
         <div className="flex items-center gap-4 font-display text-3xl font-extrabold">
@@ -235,4 +231,77 @@ function Anim({ slug }: { slug: string }) {
 
 export function ToolAnimation({ slug }: { slug: string }) {
   return <Stage><Anim slug={slug} /></Stage>;
+}
+
+const RESIZE_ITEMS: { label: string; size: string; w: number; h: number; art: ReactNode }[] = [
+  {
+    label: "Photo", size: "413×531 px", w: 104, h: 134,
+    art: (
+      <svg viewBox="0 0 60 78" className="h-full w-full">
+        <rect width="60" height="78" rx="4" className="fill-lavender" />
+        <circle cx="30" cy="30" r="12" className="fill-primary" />
+        <path d="M8 78c0-16 10-26 22-26s22 10 22 26z" className="fill-primary" />
+      </svg>
+    ),
+  },
+  {
+    label: "Signature", size: "140×60 px", w: 170, h: 74,
+    art: (
+      <svg viewBox="0 0 140 60" className="h-full w-full">
+        <rect width="140" height="60" rx="4" className="fill-card" />
+        <path d="M10 40c10-26 18-26 16-4s10-22 18-14-4 20 6 10 12-18 18-6 6 10 16 2 14-8 22-4" className="fill-none stroke-primary" strokeWidth="3" strokeLinecap="round" />
+        <path d="M10 50h120" className="stroke-lavender" strokeWidth="1.5" />
+      </svg>
+    ),
+  },
+  {
+    label: "Fingerprint", size: "240×240 px", w: 120, h: 120,
+    art: (
+      <svg viewBox="0 0 60 60" className="h-full w-full">
+        <rect width="60" height="60" rx="4" className="fill-card" />
+        {[6, 10, 14, 18, 22].map((r) => (
+          <path key={r} d={`M${30 - r} 34a${r} ${r + 3} 0 0 1 ${r * 2} 0`} className="fill-none stroke-primary" strokeWidth="2" strokeLinecap="round" />
+        ))}
+        <path d="M30 34v14" className="stroke-primary" strokeWidth="2" strokeLinecap="round" />
+      </svg>
+    ),
+  },
+  {
+    label: "Document", size: "A4 · 1240×1754", w: 96, h: 136,
+    art: (
+      <svg viewBox="0 0 60 85" className="h-full w-full">
+        <rect width="60" height="85" rx="4" className="fill-card" />
+        <rect x="8" y="8" width="24" height="5" rx="2" className="fill-primary" />
+        {[20, 27, 34, 41, 48, 55].map((y, i) => <rect key={y} x="8" y={y} width={i % 2 ? 34 : 44} height="3" rx="1.5" className="fill-lavender" />)}
+        <rect x="36" y="64" width="16" height="13" rx="2" className="fill-primary/40" />
+      </svg>
+    ),
+  },
+];
+
+function ResizeAnything() {
+  const cycle = RESIZE_ITEMS.length * 3;
+  return (
+    <div className="relative h-56 w-72">
+      {RESIZE_ITEMS.map((it, i) => (
+        <div
+          key={it.label}
+          className="absolute inset-0 flex flex-col items-center justify-center gap-3 opacity-0"
+          style={{ animation: `rz-show ${cycle}s ease-in-out ${i * 3}s infinite both` }}
+        >
+          <div className="relative" style={{ width: it.w, height: it.h, animation: `rz-size ${cycle}s ease-in-out ${i * 3}s infinite both` }}>
+            <div className="h-full w-full overflow-hidden rounded-md border border-lavender shadow-soft">{it.art}</div>
+            <div className="absolute -inset-1.5 rounded-lg border-2 border-dashed border-primary" />
+            {["-left-2.5 -top-2.5", "-right-2.5 -top-2.5", "-left-2.5 -bottom-2.5", "-right-2.5 -bottom-2.5"].map((c) => (
+              <span key={c} className={`absolute h-3 w-3 rounded-sm border-2 border-primary bg-background ${c}`} />
+            ))}
+          </div>
+          <div className="flex items-center gap-2 font-display text-sm font-bold">
+            <span className="text-foreground">{it.label}</span>
+            <span className="rounded-full bg-gradient-primary px-2.5 py-0.5 text-xs text-primary-foreground">{it.size}</span>
+          </div>
+        </div>
+      ))}
+    </div>
+  );
 }
