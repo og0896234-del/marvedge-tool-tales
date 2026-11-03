@@ -416,3 +416,80 @@ function GifSqueeze() {
     </div>
   );
 }
+
+/** One video, every screen: the frame morphs from YouTube's wide 16:9 into the
+ *  tall 9:16 of TikTok, Reels and LinkedIn, with each platform's logo inside. */
+const ASPECT_PLATFORMS: { name: string; ratio: string; logo: ReactNode }[] = [
+  {
+    name: "YouTube", ratio: "16:9",
+    logo: (
+      <svg viewBox="0 0 48 34" className="h-9 w-12" aria-hidden>
+        <rect width="48" height="34" rx="8" fill="#FF0033" />
+        <path d="M20 10.5v13l11-6.5z" fill="#fff" />
+      </svg>
+    ),
+  },
+  {
+    name: "TikTok", ratio: "9:16",
+    logo: (
+      <svg viewBox="0 0 36 36" className="h-10 w-10" aria-hidden>
+        <rect width="36" height="36" rx="9" fill="#111" />
+        <path d="M21.5 8v12.6a4.6 4.6 0 1 1-3.4-4.4v-3.5a8.1 8.1 0 1 0 6.9 8V14a8.6 8.6 0 0 0 5 1.6v-3.5A5.1 5.1 0 0 1 21.5 8z" fill="#25F4EE" />
+        <path d="M20.2 9.3v12.6a4.6 4.6 0 1 1-3.4-4.4v-3.5a8.1 8.1 0 1 0 6.9 8v-4.6" fill="none" stroke="#FE2C55" strokeWidth="1.4" />
+      </svg>
+    ),
+  },
+  {
+    name: "Reels", ratio: "9:16",
+    logo: (
+      <svg viewBox="0 0 36 36" className="h-10 w-10" aria-hidden>
+        <defs>
+          <linearGradient id="ar-ig" x1="0" y1="1" x2="1" y2="0">
+            <stop offset="0" stopColor="#FEDA75" /><stop offset=".5" stopColor="#D62976" /><stop offset="1" stopColor="#4F5BD5" />
+          </linearGradient>
+        </defs>
+        <rect width="36" height="36" rx="9" fill="url(#ar-ig)" />
+        <rect x="8" y="8" width="20" height="20" rx="6" fill="none" stroke="#fff" strokeWidth="2.2" />
+        <path d="M16 14.5v7l6-3.5z" fill="#fff" />
+      </svg>
+    ),
+  },
+  {
+    name: "LinkedIn", ratio: "9:16",
+    logo: (
+      <svg viewBox="0 0 36 36" className="h-10 w-10" aria-hidden>
+        <rect width="36" height="36" rx="7" fill="#0A66C2" />
+        <rect x="8.5" y="14.5" width="4" height="11" fill="#fff" />
+        <circle cx="10.5" cy="10.5" r="2.3" fill="#fff" />
+        <path d="M16 14.5h3.8v1.7c.6-1 1.9-2 3.9-2 3 0 4.3 1.8 4.3 5v6.3h-4v-5.6c0-1.6-.6-2.6-2-2.6-1.5 0-2.2 1-2.2 2.6v5.6h-3.8z" fill="#fff" />
+      </svg>
+    ),
+  },
+];
+
+function AspectPlatforms() {
+  const cycle = ASPECT_PLATFORMS.length * 3;
+  return (
+    <div className="flex flex-col items-center gap-4">
+      <div className="relative flex h-44 items-center justify-center">
+        <div className={`relative overflow-hidden ${Box}`} style={a(`ar-frame ${cycle}s ease-in-out infinite`)}>
+          <div className="absolute inset-0 grid place-items-center">
+            {ASPECT_PLATFORMS.map((p, i) => (
+              <div key={p.name} className="col-start-1 row-start-1 flex flex-col items-center gap-1.5 opacity-0"
+                style={a(`ar-logo ${cycle}s ease-in-out ${-i * 3}s infinite`)}>
+                {p.logo}
+                <span className="rounded-full bg-background/90 px-2 py-0.5 font-display text-[11px] font-bold text-primary shadow-soft">{p.ratio}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+      <div className="relative h-6 w-40">
+        {ASPECT_PLATFORMS.map((p, i) => (
+          <span key={p.name} className="absolute inset-0 text-center font-display text-sm font-bold text-foreground opacity-0"
+            style={a(`ar-logo ${cycle}s ease-in-out ${-i * 3}s infinite`)}>{p.name}</span>
+        ))}
+      </div>
+    </div>
+  );
+}
