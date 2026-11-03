@@ -1,9 +1,8 @@
 import { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
-import { AlertTriangle, Printer, Upload, X } from "lucide-react";
+import { AlertTriangle, Printer } from "lucide-react";
 import { drawQr, type QrCorner, type QrShape } from "@/lib/qr-render";
-import { loadSample } from "@/lib/samples";
-import { Btn, Field, Panel, inputCls, loadImage, rangeCls } from "./ui";
+import { Btn, Field, inputCls, rangeCls } from "./ui";
 
 const MM = 96 / 25.4; // css px per mm
 
@@ -15,14 +14,6 @@ const PAPERS = [
 ] as const;
 type PaperId = (typeof PAPERS)[number]["id"];
 
-const SHAPES: { id: QrShape; label: string }[] = [
-  { id: "square", label: "Classic" }, { id: "rounded", label: "Rounded" }, { id: "dots", label: "Dots" },
-  { id: "diamond", label: "Diamond" }, { id: "star", label: "Stars" }, { id: "classy", label: "Classy" },
-  { id: "fluid", label: "Fluid" }, { id: "bars", label: "Bars" },
-];
-const CORNERS: { id: QrCorner; label: string }[] = [
-  { id: "square", label: "Square" }, { id: "rounded", label: "Rounded" }, { id: "circle", label: "Circle" }, { id: "leaf", label: "Leaf" },
-];
 const SWATCHES = ["#4C0585", "#1e1b4b", "#0f766e", "#b45309", "#be123c", "#111111"];
 
 type SheetProps = {
@@ -64,15 +55,11 @@ function Sheet(p: SheetProps) {
   );
 }
 
-export function QrPrinter() {
-  const [text, setText] = useState("https://marvedge.com/");
-  const [shape, setShape] = useState<QrShape>("square");
-  const [corner, setCorner] = useState<QrCorner>("square");
-  const [fg, setFg] = useState("#4C0585");
-  const [bg, setBg] = useState("#ffffff");
-  const [logo, setLogo] = useState<HTMLImageElement | null>(null);
-  const [sampling, setSampling] = useState(false);
-
+/** Print-layout section for the QR Generator — reuses the designed code (content,
+ *  shape, corners, colors, logo) and adds paper, border and copies-per-sheet settings. */
+export function QrPrintLayout({ value, fg, bg, shape, corner, logo }: {
+  value: string; fg: string; bg: string; shape: QrShape; corner: QrCorner; logo: HTMLImageElement | null;
+}) {
   const [paper, setPaper] = useState<PaperId>("a4");
   const [landscape, setLandscape] = useState(false);
   const [margin, setMargin] = useState(10);
@@ -87,19 +74,18 @@ export function QrPrinter() {
   const [gap, setGap] = useState(6);
 
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const logoInputRef = useRef<HTMLInputElement>(null);
   const [png, setPng] = useState<string | null>(null);
   const [mounted, setMounted] = useState(false);
   useEffect(() => setMounted(true), []);
 
   useEffect(() => {
     const c = canvasRef.current;
-    if (!c || !text.trim()) { setPng(null); return; }
+    if (!c || !value.trim()) { setPng(null); return; }
     try {
-      drawQr(c, text, { fg, bg, size: 800, level: "Q", shape, corner, frame: "none", logo });
+      drawQr(c, value, { fg, bg, size: 800, level: logo ? "H" : "Q", shape, corner, frame: "none", logo });
       setPng(c.toDataURL("image/png"));
     } catch { /* invalid content — keep last render */ }
-  }, [text, fg, bg, shape, corner, logo]);
+  }, [value, fg, bg, shape, corner, logo]);
 
   const p = PAPERS.find((x) => x.id === paper)!;
   const paperW = landscape ? p.h : p.w;
@@ -117,117 +103,78 @@ export function QrPrinter() {
     `rounded-full border px-3 py-1.5 text-xs font-bold transition ${on ? "bg-gradient-primary text-primary-foreground" : "hover:bg-secondary"}`;
 
   return (
-    <Panel>
+    <div className="grid gap-8 lg:grid-cols-[1fr_360px]">
       <canvas ref={canvasRef} className="hidden" aria-hidden />
 
-      <div className="grid gap-8 lg:grid-cols-[1fr_360px]">
-        <div className="grid content-start gap-6">
-          <Field label="Link or text for the QR code">
-            <textarea rows={2} className={inputCls} value={text} onChange={(e) => setText(e.target.value)} placeholder="https://your-site.com/" />
-          </Field>
-
-          <div className="grid gap-3">
-            <span className="text-sm font-semibold">Style</span>
-            <div className="flex flex-wrap gap-1.5">
-              {SHAPES.map((s) => <button key={s.id} onClick={() => setShape(s.id)} className={chip(shape === s.id)}>{s.label}</button>)}
-            </div>
-            <div className="flex flex-wrap items-center gap-1.5">
-              <span className="mr-1 text-xs font-semibold text-muted-foreground">Corners:</span>
-              {CORNERS.map((k) => <button key={k.id} onClick={() => setCorner(k.id)} className={chip(corner === k.id)}>{k.label}</button>)}
-            </div>
-            <div className="flex flex-wrap items-center gap-2">
-              <span className="mr-1 text-xs font-semibold text-muted-foreground">Code:</span>
-              {SWATCHES.map((c) => (
-                <button key={c} aria-label={`Code color ${c}`} onClick={() => setFg(c)}
-                  className={`h-8 w-8 rounded-full border-2 transition ${fg === c ? "scale-110 border-primary ring-2 ring-ring/40" : "border-transparent hover:scale-105"}`}
-                  style={{ background: c }} />
-              ))}
-              <input type="color" value={fg} onChange={(e) => setFg(e.target.value)} aria-label="Custom code color" className="h-8 w-11 cursor-pointer rounded-lg border" />
-              <span className="ml-2 mr-1 text-xs font-semibold text-muted-foreground">Paper behind code:</span>
-              {["#ffffff", "#FFFDFE", "#f5f3ff"].map((c) => (
-                <button key={c} aria-label={`Background ${c}`} onClick={() => setBg(c)}
-                  className={`h-8 w-8 rounded-full border-2 transition ${bg === c ? "scale-110 border-primary ring-2 ring-ring/40" : "border-border hover:scale-105"}`}
-                  style={{ background: c }} />
-              ))}
-            </div>
-            <div className="flex flex-wrap items-center gap-2">
-              <Btn variant="ghost" onClick={() => logoInputRef.current?.click()}><Upload className="h-4 w-4" />{logo ? "Change logo" : "Add a logo"}</Btn>
-              {logo && <Btn variant="ghost" onClick={() => setLogo(null)}><X className="h-4 w-4" />Remove</Btn>}
-              <Btn variant="ghost" busy={sampling} onClick={async () => { setSampling(true); setLogo(await loadImage(await loadSample("logo"))); setSampling(false); }}>Try a sample logo</Btn>
-              <input ref={logoInputRef} type="file" hidden accept="image/*"
-                onChange={async (e) => { const f = e.target.files?.[0]; if (f) setLogo(await loadImage(f)); e.target.value = ""; }} />
-            </div>
+      <div className="grid content-start gap-6">
+        <div className="grid gap-3">
+          <span className="text-sm font-semibold">Paper</span>
+          <div className="flex flex-wrap gap-1.5">
+            {PAPERS.map((x) => <button key={x.id} onClick={() => setPaper(x.id)} className={chip(paper === x.id)}>{x.label} · {x.w}×{x.h} mm</button>)}
+            <button onClick={() => setLandscape((v) => !v)} className={chip(landscape)}>{landscape ? "Landscape" : "Portrait"}</button>
           </div>
-
-          <div className="grid gap-3">
-            <span className="text-sm font-semibold">Paper</span>
-            <div className="flex flex-wrap gap-1.5">
-              {PAPERS.map((x) => <button key={x.id} onClick={() => setPaper(x.id)} className={chip(paper === x.id)}>{x.label} · {x.w}×{x.h} mm</button>)}
-              <button onClick={() => setLandscape((v) => !v)} className={chip(landscape)}>{landscape ? "Landscape" : "Portrait"}</button>
-            </div>
-            <div className="grid gap-4 sm:grid-cols-2">
-              <Field label={`QR size · ${qrMm} mm`} hint="25–30 mm scans well at arm's length; go bigger for posters.">
-                <input type="range" min={15} max={120} step={1} value={qrMm} onChange={(e) => setQrMm(+e.target.value)} className={rangeCls} />
-              </Field>
-              <Field label={`Page margin · ${margin} mm`}>
-                <input type="range" min={0} max={30} step={1} value={margin} onChange={(e) => setMargin(+e.target.value)} className={rangeCls} />
-              </Field>
-            </div>
-          </div>
-
-          <div className="grid gap-3">
-            <label className="flex items-center gap-2 text-sm font-semibold">
-              <input type="checkbox" checked={borderOn} onChange={(e) => setBorderOn(e.target.checked)} className="accent-primary" /> Border around each code
-            </label>
-            {borderOn && (
-              <div className="grid gap-4 sm:grid-cols-2">
-                <Field label={`Thickness · ${borderMm} mm`}><input type="range" min={0.5} max={5} step={0.5} value={borderMm} onChange={(e) => setBorderMm(+e.target.value)} className={rangeCls} /></Field>
-                <Field label={`Corner radius · ${radiusMm} mm`}><input type="range" min={0} max={10} step={1} value={radiusMm} onChange={(e) => setRadiusMm(+e.target.value)} className={rangeCls} /></Field>
-                <div className="flex items-center gap-2">
-                  <span className="text-xs font-semibold text-muted-foreground">Border color:</span>
-                  {SWATCHES.map((c) => (
-                    <button key={c} aria-label={`Border color ${c}`} onClick={() => setBorderColor(c)}
-                      className={`h-7 w-7 rounded-full border-2 transition ${borderColor === c ? "scale-110 border-primary ring-2 ring-ring/40" : "border-transparent hover:scale-105"}`}
-                      style={{ background: c }} />
-                  ))}
-                  <input type="color" value={borderColor} onChange={(e) => setBorderColor(e.target.value)} aria-label="Custom border color" className="h-7 w-10 cursor-pointer rounded-lg border" />
-                </div>
-              </div>
-            )}
-          </div>
-
-          <div className="grid gap-3">
-            <span className="text-sm font-semibold">Copies per sheet</span>
-            <div className="grid gap-4 sm:grid-cols-3">
-              <Field label={`Columns · ${cols}`}><input type="range" min={1} max={6} value={cols} onChange={(e) => setCols(+e.target.value)} className={rangeCls} /></Field>
-              <Field label={`Rows · ${rows}`}><input type="range" min={1} max={8} value={rows} onChange={(e) => setRows(+e.target.value)} className={rangeCls} /></Field>
-              <Field label={`Gap · ${gap} mm`}><input type="range" min={0} max={20} value={gap} onChange={(e) => setGap(+e.target.value)} className={rangeCls} /></Field>
-            </div>
-            <Field label="Caption under each code (optional)">
-              <input className={inputCls} value={caption} onChange={(e) => setCaption(e.target.value)} placeholder="Scan me" />
+          <div className="grid gap-4 sm:grid-cols-2">
+            <Field label={`QR size · ${qrMm} mm`} hint="25–30 mm scans well at arm's length; go bigger for posters.">
+              <input type="range" min={15} max={120} step={1} value={qrMm} onChange={(e) => setQrMm(+e.target.value)} className={rangeCls} />
+            </Field>
+            <Field label={`Page margin · ${margin} mm`}>
+              <input type="range" min={0} max={30} step={1} value={margin} onChange={(e) => setMargin(+e.target.value)} className={rangeCls} />
             </Field>
           </div>
         </div>
 
-        {/* preview + print */}
-        <div className="grid content-start justify-items-center gap-4 rounded-3xl border bg-muted/50 p-6">
-          <h3 className="font-display text-lg font-bold">Sheet preview</h3>
-          <div className="overflow-hidden rounded-lg shadow-elegant" style={{ width: paperW * MM * previewScale, height: paperH * MM * previewScale }}>
-            <div style={{ transform: `scale(${previewScale})`, transformOrigin: "top left" }}>
-              <Sheet {...sheetProps} />
+        <div className="grid gap-3">
+          <label className="flex items-center gap-2 text-sm font-semibold">
+            <input type="checkbox" checked={borderOn} onChange={(e) => setBorderOn(e.target.checked)} className="accent-primary" /> Border around each code
+          </label>
+          {borderOn && (
+            <div className="grid gap-4 sm:grid-cols-2">
+              <Field label={`Thickness · ${borderMm} mm`}><input type="range" min={0.5} max={5} step={0.5} value={borderMm} onChange={(e) => setBorderMm(+e.target.value)} className={rangeCls} /></Field>
+              <Field label={`Corner radius · ${radiusMm} mm`}><input type="range" min={0} max={10} step={1} value={radiusMm} onChange={(e) => setRadiusMm(+e.target.value)} className={rangeCls} /></Field>
+              <div className="flex items-center gap-2">
+                <span className="text-xs font-semibold text-muted-foreground">Border color:</span>
+                {SWATCHES.map((c) => (
+                  <button key={c} aria-label={`Border color ${c}`} onClick={() => setBorderColor(c)}
+                    className={`h-7 w-7 rounded-full border-2 transition ${borderColor === c ? "scale-110 border-primary ring-2 ring-ring/40" : "border-transparent hover:scale-105"}`}
+                    style={{ background: c }} />
+                ))}
+                <input type="color" value={borderColor} onChange={(e) => setBorderColor(e.target.value)} aria-label="Custom border color" className="h-7 w-10 cursor-pointer rounded-lg border" />
+              </div>
             </div>
-          </div>
-          <p className="text-center text-xs text-muted-foreground">
-            {p.label} {landscape ? "landscape" : "portrait"} · {cols * rows} code{cols * rows > 1 ? "s" : ""} · {qrMm} mm each
-          </p>
-          {!fits && (
-            <p className="flex items-center gap-2 rounded-xl bg-destructive/10 px-4 py-2.5 text-center text-xs font-medium text-destructive">
-              <AlertTriangle className="h-4 w-4 shrink-0" /> This layout doesn't fit the page — shrink the code, add margin room, or use fewer copies.
-            </p>
           )}
-          <Btn onClick={() => window.print()} disabled={!png || !fits}><Printer className="h-4 w-4" />Print this sheet</Btn>
-          <p className="text-center text-xs text-muted-foreground">In the print dialog choose “Actual size / 100%” so the millimetre sizes stay exact.</p>
         </div>
+
+        <div className="grid gap-3">
+          <span className="text-sm font-semibold">Copies per sheet</span>
+          <div className="grid gap-4 sm:grid-cols-3">
+            <Field label={`Columns · ${cols}`}><input type="range" min={1} max={6} value={cols} onChange={(e) => setCols(+e.target.value)} className={rangeCls} /></Field>
+            <Field label={`Rows · ${rows}`}><input type="range" min={1} max={8} value={rows} onChange={(e) => setRows(+e.target.value)} className={rangeCls} /></Field>
+            <Field label={`Gap · ${gap} mm`}><input type="range" min={0} max={20} value={gap} onChange={(e) => setGap(+e.target.value)} className={rangeCls} /></Field>
+          </div>
+          <Field label="Caption under each code (optional)">
+            <input className={inputCls} value={caption} onChange={(e) => setCaption(e.target.value)} placeholder="Scan me" />
+          </Field>
+        </div>
+      </div>
+
+      {/* preview + print */}
+      <div className="grid content-start justify-items-center gap-4 rounded-3xl border bg-muted/50 p-6">
+        <h3 className="font-display text-lg font-bold">Sheet preview</h3>
+        <div className="overflow-hidden rounded-lg shadow-elegant" style={{ width: paperW * MM * previewScale, height: paperH * MM * previewScale }}>
+          <div style={{ transform: `scale(${previewScale})`, transformOrigin: "top left" }}>
+            <Sheet {...sheetProps} />
+          </div>
+        </div>
+        <p className="text-center text-xs text-muted-foreground">
+          {p.label} {landscape ? "landscape" : "portrait"} · {cols * rows} code{cols * rows > 1 ? "s" : ""} · {qrMm} mm each
+        </p>
+        {!fits && (
+          <p className="flex items-center gap-2 rounded-xl bg-destructive/10 px-4 py-2.5 text-center text-xs font-medium text-destructive">
+            <AlertTriangle className="h-4 w-4 shrink-0" /> This layout doesn't fit the page — shrink the code, add margin room, or use fewer copies.
+          </p>
+        )}
+        <Btn onClick={() => window.print()} disabled={!png || !fits}><Printer className="h-4 w-4" />Print this sheet</Btn>
+        <p className="text-center text-xs text-muted-foreground">In the print dialog choose “Actual size / 100%” so the millimetre sizes stay exact.</p>
       </div>
 
       {mounted && createPortal(
@@ -237,6 +184,6 @@ export function QrPrinter() {
         </div>,
         document.body,
       )}
-    </Panel>
+    </div>
   );
 }

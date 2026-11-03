@@ -2,12 +2,13 @@ import { useEffect, useRef, useState } from "react";
 import QRCode from "qrcode";
 import JSZip from "jszip";
 import { PDFDocument, StandardFonts, rgb } from "pdf-lib";
-import { AlertTriangle, ArrowDown, ArrowUp, Check, Globe, IdCard, Loader2, Mail, Phone, Type, Upload, Wifi, X } from "lucide-react";
+import { AlertTriangle, ArrowDown, ArrowUp, Check, Download, Globe, IdCard, Loader2, Mail, Phone, Printer, Type, Upload, Wifi, X } from "lucide-react";
 import { loadSample } from "@/lib/samples";
 import { PresetPicker } from "@/components/tools/PresetPicker";
 
 import { fitToTarget } from "@/lib/fit-size";
 import { cornerRadii, drawModule, drawQr, type QrCorner, type QrFrame, type QrShape } from "@/lib/qr-render";
+import { QrPrintLayout } from "./QrPrinter";
 import { Btn, Dropzone, DownloadBtn, ErrorNote, Field, Panel, baseName, canvasBlob, download, extFor, fmtBytes, inputCls, loadImage, rangeCls } from "./ui";
 
 type Out = { name: string; before: number; blob: Blob; url: string };
@@ -343,6 +344,7 @@ function FrameThumb({ id, fg }: { id: QrFrame; fg: string }) {
 }
 
 export function QrGenerator() {
+  const [mode, setMode] = useState<"design" | "print">("design");
   const [type, setType] = useState<QrType>("url");
   const [text, setText] = useState("https://marvedge.com/");
   const [ssid, setSsid] = useState(""); const [pass, setPass] = useState(""); const [enc, setEnc] = useState("WPA");
@@ -390,6 +392,19 @@ export function QrGenerator() {
         ))}
       </div>
 
+      {/* design vs print mode */}
+      <div className="flex w-fit gap-1 rounded-2xl bg-muted p-1">
+        {([["design", "Design & download", Download], ["print", "Print a sheet", Printer]] as const).map(([m, label, Icon]) => (
+          <button key={m} onClick={() => setMode(m)}
+            className={`inline-flex items-center gap-2 rounded-xl px-4 py-2 text-sm font-bold transition ${mode === m ? "bg-card text-primary shadow-soft" : "text-muted-foreground hover:text-foreground"}`}>
+            <Icon className="h-4 w-4" />{label}
+          </button>
+        ))}
+      </div>
+
+      {mode === "print" ? (
+        <QrPrintLayout value={value} fg={fg} bg={bg} shape={shape} corner={corner} logo={logo} />
+      ) : (
       <div className="grid gap-8 lg:grid-cols-[1fr_300px]">
         <div className="grid content-start gap-7">
           {/* step 1: content */}
@@ -543,8 +558,10 @@ export function QrGenerator() {
           </div>
           {!plainSvg && <p className="text-center text-xs text-muted-foreground">SVG export is available for the classic square style without a frame or logo.</p>}
           <p className="text-center text-xs text-muted-foreground">Updates live as you type — scan it with your phone to test.</p>
+          <Btn variant="ghost" onClick={() => setMode("print")}><Printer className="h-4 w-4" />Print this design</Btn>
         </div>
       </div>
+      )}
     </Panel>
   );
 }

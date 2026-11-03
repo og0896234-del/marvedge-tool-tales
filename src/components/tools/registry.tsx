@@ -2,7 +2,6 @@ import type { ReactNode } from "react";
 import { FaviconGenerator, FormatConverter, ImageCompressor, ImageResizer, PdfTool, QrGenerator } from "./ImageTools";
 import { AspectRatio, GifCompressor, Mp4ToGif, VideoCompressor } from "./VideoTools";
 import { LinkShortener } from "./LinkShortener";
-import { QrPrinter } from "./QrPrinter";
 import { AiTextTool, ScreenshotGuide, SubtitleGenerator, VoiceoverGenerator } from "./AiTools";
 
 export function ToolWorkspace({ slug }: { slug: string }): ReactNode {
@@ -17,7 +16,6 @@ export function ToolWorkspace({ slug }: { slug: string }): ReactNode {
     case "pdf-merger": return <PdfTool />;
     case "favicon-generator": return <FaviconGenerator />;
     case "link-shortener": return <LinkShortener />;
-    case "qr-printer": return <QrPrinter />;
     case "video-aspect-ratio": return <AspectRatio />;
     case "screenshot-to-guide": return <ScreenshotGuide />;
     case "subtitle-generator": return <SubtitleGenerator />;
