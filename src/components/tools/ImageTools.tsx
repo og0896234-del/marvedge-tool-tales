@@ -2,12 +2,13 @@ import { useEffect, useRef, useState } from "react";
 import QRCode from "qrcode";
 import JSZip from "jszip";
 import { PDFDocument, StandardFonts, rgb } from "pdf-lib";
-import { AlertTriangle, ArrowDown, ArrowUp, Check, Globe, IdCard, Loader2, Mail, Phone, Type, Upload, Wifi, X } from "lucide-react";
+import { AlertTriangle, ArrowDown, ArrowUp, Check, Download, Globe, IdCard, Loader2, Mail, Phone, Printer, Type, Upload, Wifi, X } from "lucide-react";
 import { loadSample } from "@/lib/samples";
 import { PresetPicker } from "@/components/tools/PresetPicker";
 
 import { fitToTarget } from "@/lib/fit-size";
 import { cornerRadii, drawModule, drawQr, type QrCorner, type QrFrame, type QrShape } from "@/lib/qr-render";
+import { QrPrintLayout } from "./QrPrinter";
 import { Btn, Dropzone, DownloadBtn, ErrorNote, Field, Panel, baseName, canvasBlob, download, extFor, fmtBytes, inputCls, loadImage, rangeCls } from "./ui";
 
 type Out = { name: string; before: number; blob: Blob; url: string };
@@ -343,6 +344,7 @@ function FrameThumb({ id, fg }: { id: QrFrame; fg: string }) {
 }
 
 export function QrGenerator() {
+  const [mode, setMode] = useState<"design" | "print">("design");
   const [type, setType] = useState<QrType>("url");
   const [text, setText] = useState("https://marvedge.com/");
   const [ssid, setSsid] = useState(""); const [pass, setPass] = useState(""); const [enc, setEnc] = useState("WPA");
