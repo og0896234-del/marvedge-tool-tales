@@ -2,8 +2,8 @@ import { describe, expect, it } from "vitest";
 import { tools, MARVEDGE_URL } from "@/lib/tools";
 
 describe("tools", () => {
-  it("has 19 tools: 11 free and 8 AI", () => {
-    expect(tools).toHaveLength(19);
+  it("has 20 tools: 12 free and 8 AI", () => {
+    expect(tools).toHaveLength(20);
     expect(tools.filter((t) => t.category === "AI tool")).toHaveLength(8);
   });
   it("related links point to real tools", () => {
