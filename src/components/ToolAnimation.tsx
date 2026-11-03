@@ -93,6 +93,22 @@ function Anim({ slug }: { slug: string }) {
           ))}
         </div>
       );
+    case "qr-printer":
+      return (
+        <div className="qp-stage flex flex-col items-center">
+          <div className="relative z-10 h-14 w-44 rounded-t-2xl bg-gradient-primary shadow-elegant">
+            <div className="absolute inset-x-4 bottom-2 h-2 rounded-full bg-primary-foreground/40" />
+          </div>
+          <div className="relative -mt-1 flex h-28 w-40 items-start justify-center overflow-hidden">
+            <div className="grid w-24 grid-cols-5 gap-0.5 rounded-lg border-2 border-primary bg-background p-1.5 shadow-soft" style={a("qp-feed 4s ease-in-out infinite")}>
+              {Array.from({ length: 25 }).map((_, i) => (
+                <div key={i} className={`h-3.5 w-3.5 rounded-[2px] ${(i * 5 + (i % 3)) % 4 < 2 ? "bg-primary" : "bg-secondary"}`} />
+              ))}
+            </div>
+          </div>
+          <div className="h-3 w-52 rounded-full bg-lavender/60" />
+        </div>
+      );
     case "video-compressor":
       return (
         <div className="flex items-center gap-2">

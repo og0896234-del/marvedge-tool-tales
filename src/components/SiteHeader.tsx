@@ -44,7 +44,7 @@ export function SiteHeader() {
           <Link to="/" className="rounded-full px-4 py-2 text-sm font-medium hover:bg-secondary" activeOptions={{ exact: true }} activeProps={{ className: "text-primary" }}>Home</Link>
           <div className="relative" onMouseEnter={() => setOpen(true)} onMouseLeave={() => setOpen(false)}>
             <button onClick={() => setOpen((o) => !o)} className="flex items-center gap-1 rounded-full px-4 py-2 text-sm font-medium hover:bg-secondary">
-              All 19 tools <ChevronDown className={`h-4 w-4 transition-transform ${open ? "rotate-180" : ""}`} />
+              All 20 tools <ChevronDown className={`h-4 w-4 transition-transform ${open ? "rotate-180" : ""}`} />
             </button>
             {open && (
               <div className="absolute left-1/2 top-full w-[620px] -translate-x-1/2 pt-3">
