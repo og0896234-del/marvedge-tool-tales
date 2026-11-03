@@ -86,15 +86,6 @@ function Anim({ slug }: { slug: string }) {
       );
     case "qr-code-generator":
       return (
-        <div className="grid grid-cols-7 gap-1 rounded-2xl bg-background p-3 shadow-soft">
-          {Array.from({ length: 49 }).map((_, i) => (
-            <div key={i} className={`h-5 w-5 rounded-sm ${(i * 7 + (i % 3)) % 5 < 2 ? "bg-primary" : "bg-secondary"}`}
-              style={a(`pop 3s ${(i % 7) * 0.08 + Math.floor(i / 7) * 0.05}s ease-in-out infinite`)} />
-          ))}
-        </div>
-      );
-    case "qr-printer":
-      return (
         <div className="qp-stage flex flex-col items-center">
           <div className="relative z-10 h-14 w-44 rounded-t-2xl bg-gradient-primary shadow-elegant">
             <div className="absolute inset-x-4 bottom-2 h-2 rounded-full bg-primary-foreground/40" />

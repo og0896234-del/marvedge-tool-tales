@@ -38,26 +38,18 @@ export const toolInsights: Record<string, ToolInsight[]> = {
     ["Corners with a job", "Those three large corner squares help scanners locate and orient a QR code.", "scan"],
     ["Built-in backup", "QR error correction can recover some damaged data. It's not permission to cover half the code.", "file"],
     ["Personal space, please", "A clear border around a QR code helps scanners tell it apart from its surroundings.", "frame"],
+    ["Millimetres matter", "A QR code printed too small is hard to scan. Around 25–30 mm works well at arm's length.", "resize"],
+    ["Ink beats light", "A dark code on light paper scans best. Light codes on dark paper confuse most cameras.", "palette"],
   ], [
     ["Shortcut to somewhere", "A tiny square with a surprisingly busy social life.", "scan"],
     ["No spelling bee", "Why type a long URL when your camera can do the introductions?", "text"],
     ["Square networking", "I'm terrible at introductions. This square hands out my link for me.", "scan"],
     ["Wi-Fi romance", "Our love language is scanning the Wi-Fi code instead of spelling the password.", "voice"],
     ["Menu detective", "I pointed my phone at a square and somehow ordered fries.", "scan"],
-    ["Business-card promotion", "My business card got a portal. I still have a commute.", "file"],
-    ["Camera confidence", "The only time staring at a square counts as being productive.", "frame"],
-  ]),
-  "qr-printer": collection([
-    ["Millimetres matter", "A QR code printed too small is hard to scan. Around 25–30 mm works well at arm's length.", "resize"],
-    ["The quiet zone", "Scanners like a clear margin around the code. Give your QR some personal space.", "frame"],
-    ["Ink beats light", "A dark code on light paper scans best. Light codes on dark paper confuse most cameras.", "palette"],
-  ], [
     ["Paper portal", "One printed square, and a stranger walks straight into your website.", "scan"],
-    ["Poster promise", "Print it big enough and even the back row gets the link.", "frame"],
     ["Table talker", "My QR code stands on the table and does all the small talk.", "scan"],
     ["Sticker economics", "A hundred tiny doorways, one sheet of paper.", "file"],
     ["Ink testimony", "The printer asked for one document. I gave it twelve identical squares of destiny.", "file"],
-    ["Scan me tender", "Nothing says commitment like a well-aligned quiet zone.", "spark"],
     ["Copy machine", "I printed thirty copies. Somewhere, thirty phones are about to buzz.", "loop"],
   ]),
   "video-compressor": collection([
