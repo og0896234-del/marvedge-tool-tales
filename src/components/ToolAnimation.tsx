@@ -154,7 +154,7 @@ function Anim({ slug }: { slug: string }) {
         </div>
       );
     case "video-aspect-ratio":
-      return <div className={Box} style={a("morph 6s ease-in-out infinite")} />;
+      return <AspectPlatforms />;
     case "video-summarizer":
       return (
         <div className="flex gap-6">

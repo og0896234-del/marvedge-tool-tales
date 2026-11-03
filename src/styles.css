@@ -133,6 +133,8 @@
 @keyframes merge-l { 0%,15%,100% { transform: translateX(-60px) rotate(-8deg); } 50%,80% { transform: translateX(0) rotate(0); } }
 @keyframes merge-r { 0%,15%,100% { transform: translateX(60px) rotate(8deg); } 50%,80% { transform: translateX(0) rotate(0); } }
 @keyframes morph { 0%,22%,100% { width: 220px; height: 124px; } 33%,55% { width: 90px; height: 160px; } 66%,88% { width: 140px; height: 140px; } }
+@keyframes ar-frame { 0%,20%,100% { width: 240px; height: 135px; } 25%,45% { width: 96px; height: 170px; } 50%,70% { width: 96px; height: 170px; } 75%,95% { width: 96px; height: 170px; } }
+@keyframes ar-logo { 0% { opacity: 0; transform: scale(.6); } 3%,20% { opacity: 1; transform: scale(1); } 24%,100% { opacity: 0; transform: scale(.6); } }
 @keyframes collapse { 0%,20%,100% { width: var(--w); opacity: 1; } 50%,80% { width: 0; opacity: 0; } }
 @keyframes reveal { 0%,40%,100% { opacity: 0; transform: translateX(-8px); } 55%,85% { opacity: 1; transform: translateX(0); } }
 @keyframes eq { 0%,100% { transform: scaleY(.25); } 50% { transform: scaleY(1); } }
