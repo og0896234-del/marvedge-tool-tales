@@ -392,6 +392,19 @@ export function QrGenerator() {
         ))}
       </div>
 
+      {/* design vs print mode */}
+      <div className="flex w-fit gap-1 rounded-2xl bg-muted p-1">
+        {([["design", "Design & download", Download], ["print", "Print a sheet", Printer]] as const).map(([m, label, Icon]) => (
+          <button key={m} onClick={() => setMode(m)}
+            className={`inline-flex items-center gap-2 rounded-xl px-4 py-2 text-sm font-bold transition ${mode === m ? "bg-card text-primary shadow-soft" : "text-muted-foreground hover:text-foreground"}`}>
+            <Icon className="h-4 w-4" />{label}
+          </button>
+        ))}
+      </div>
+
+      {mode === "print" ? (
+        <QrPrintLayout value={value} fg={fg} bg={bg} shape={shape} corner={corner} logo={logo} />
+      ) : (
       <div className="grid gap-8 lg:grid-cols-[1fr_300px]">
         <div className="grid content-start gap-7">
           {/* step 1: content */}
