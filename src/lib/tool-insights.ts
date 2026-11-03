@@ -1,7 +1,7 @@
 export type InsightArt = "loop" | "palette" | "resize" | "scan" | "film" | "file" | "spark" | "voice" | "text" | "steps" | "shop" | "frame";
 export type ToolInsight = { kind: "fact" | "quote"; title: string; text: string; art: InsightArt };
 type Entry = [title: string, text: string, art: InsightArt];
-const collection = (facts: [Entry, Entry, Entry], quotes: [Entry, Entry, Entry, Entry, Entry, Entry, Entry]): ToolInsight[] => [
+const collection = (facts: Entry[], quotes: Entry[]): ToolInsight[] => [
   ...facts.map(([title, text, art]) => ({ kind: "fact" as const, title, text, art })),
   ...quotes.map(([title, text, art]) => ({ kind: "quote" as const, title, text, art })),
 ];

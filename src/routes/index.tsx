@@ -24,7 +24,7 @@ function Index() {
       <section className="relative overflow-hidden bg-hero">
         <div className="mx-auto grid max-w-7xl items-center gap-12 px-5 py-20 md:py-28 lg:grid-cols-[1.1fr_1fr]">
           <div className="animate-fade-up">
-            <span className="rounded-full border bg-card px-3 py-1 text-xs font-bold uppercase tracking-widest text-primary">20 tools · free to start</span>
+            <span className="rounded-full border bg-card px-3 py-1 text-xs font-bold uppercase tracking-widest text-primary">19 tools · free to start</span>
             <h1 className="mt-6 text-5xl font-extrabold leading-[1.02] md:text-7xl">
               Small tools.<br /><span className="text-gradient">Big moments.</span>
             </h1>
