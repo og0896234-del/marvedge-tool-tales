@@ -558,8 +558,10 @@ export function QrGenerator() {
           </div>
           {!plainSvg && <p className="text-center text-xs text-muted-foreground">SVG export is available for the classic square style without a frame or logo.</p>}
           <p className="text-center text-xs text-muted-foreground">Updates live as you type — scan it with your phone to test.</p>
+          <Btn variant="ghost" onClick={() => setMode("print")}><Printer className="h-4 w-4" />Print this design</Btn>
         </div>
       </div>
+      )}
     </Panel>
   );
 }
