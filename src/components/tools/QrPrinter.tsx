@@ -89,6 +89,8 @@ export function QrPrinter() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const logoInputRef = useRef<HTMLInputElement>(null);
   const [png, setPng] = useState<string | null>(null);
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => setMounted(true), []);
 
   useEffect(() => {
     const c = canvasRef.current;
@@ -228,7 +230,7 @@ export function QrPrinter() {
         </div>
       </div>
 
-      {createPortal(
+      {mounted && createPortal(
         <div className="qr-print-portal">
           <style>{`@page { size: ${p.id === "letter" ? "letter" : p.id} ${landscape ? "landscape" : "portrait"}; margin: 0; }`}</style>
           <Sheet {...sheetProps} />
